@@ -1,0 +1,9 @@
+{
+  "name": "seo-check",
+  "version": "1.0.0",
+  "description": "Full SEO audit tool",
+  "private": true,
+  "dependencies": {
+    "node-fetch": "^3.3.2"
+  }
+}
