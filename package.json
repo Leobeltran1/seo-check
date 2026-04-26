@@ -3,5 +3,7 @@
   "version": "1.0.0",
   "description": "Full SEO audit tool",
   "private": true,
-  "dependencies": {}
+  "dependencies": {
+    "node-fetch": "^3.3.2"
+  }
 }

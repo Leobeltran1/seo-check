@@ -1,8 +1,7 @@
-import fetch from 'node-fetch';
+const https = require('https');
+const http = require('http');
 
-export const config = { runtime: 'nodejs' };
-
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
   if (req.method === 'OPTIONS') return res.status(200).end();
@@ -29,33 +28,53 @@ export default async function handler(req, res) {
   }
 }
 
+module.exports.config = { runtime: 'nodejs' };
+
+// ─── HTTP HELPER ────────────────────────────────────────────
+function httpGet(urlStr, { headers = {}, timeout = 15000, maxRedirects = 5 } = {}) {
+  return new Promise((resolve, reject) => {
+    let redirectsLeft = maxRedirects;
+    function request(currentUrl) {
+      const parsed = new URL(currentUrl);
+      const lib = parsed.protocol === 'https:' ? https : http;
+      const req = lib.get(
+        { hostname: parsed.hostname, port: parsed.port || undefined, path: parsed.pathname + parsed.search, headers },
+        (res) => {
+          if ([301, 302, 303, 307, 308].includes(res.statusCode) && res.headers.location && redirectsLeft-- > 0) {
+            res.resume();
+            request(new URL(res.headers.location, currentUrl).href);
+            return;
+          }
+          const chunks = [];
+          res.on('data', c => chunks.push(c));
+          res.on('end', () => resolve({ status: res.statusCode, headers: res.headers, url: currentUrl, body: Buffer.concat(chunks).toString() }));
+          res.on('error', reject);
+        }
+      );
+      req.setTimeout(timeout, () => req.destroy(new Error('Request timed out')));
+      req.on('error', reject);
+    }
+    request(urlStr);
+  });
+}
+
 // ─── FETCH HTML ─────────────────────────────────────────────
 async function fetchHTML(url) {
-  const resp = await fetch(url, {
-    headers: {
-      'User-Agent': 'Mozilla/5.0 (compatible; SEOBot/1.0)',
-      'Accept': 'text/html,application/xhtml+xml'
-    },
-    redirect: 'follow',
+  const res = await httpGet(url, {
+    headers: { 'User-Agent': 'Mozilla/5.0 (compatible; SEOBot/1.0)', 'Accept': 'text/html,application/xhtml+xml' },
     timeout: 12000
   });
-  const finalUrl = resp.url;
-  const isHttps = finalUrl.startsWith('https://');
-  const headers = Object.fromEntries(resp.headers.entries());
-  const text = await resp.text();
-  return { html: text, finalUrl, isHttps, headers, status: resp.status };
+  return { html: res.body, finalUrl: res.url, isHttps: res.url.startsWith('https://'), headers: res.headers, status: res.status };
 }
 
 // ─── FETCH PSI ──────────────────────────────────────────────
 async function fetchPSI(url, strategy, key) {
   const cats = 'category=performance&category=seo&category=accessibility&category=best-practices';
-  const keyParam = key ? `&key=${key}` : '';
-  const r = await fetch(
-    `https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=${encodeURIComponent(url)}&strategy=${strategy}&${cats}${keyParam}`,
-    { timeout: 25000 }
-  );
-  if (!r.ok) throw new Error(`PSI ${strategy} failed: ${r.status}`);
-  return r.json();
+  const keyParam = key ? `&key=${encodeURIComponent(key)}` : '';
+  const psiUrl = `https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=${encodeURIComponent(url)}&strategy=${strategy}&${cats}${keyParam}`;
+  const res = await httpGet(psiUrl, { timeout: 25000 });
+  if (res.status < 200 || res.status >= 300) throw new Error(`PSI ${strategy} failed: ${res.status}`);
+  return JSON.parse(res.body);
 }
 
 // ─── PARSE HTML ─────────────────────────────────────────────
