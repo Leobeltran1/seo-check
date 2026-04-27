@@ -283,23 +283,6 @@ body { font-family: 'DM Sans', sans-serif; background: var(--gray-bg); color: va
       <input class="kw-input" type="url" id="kwTarget" placeholder="e.g. https://yourwebsite.com" autocomplete="off" spellcheck="false"/>
     </div>
 
-    <button class="adv-toggle" id="advToggle" onclick="toggleAdv()">▼ API Settings (required)</button>
-
-    <div class="adv-section" id="advSection">
-      <div class="adv-note">
-        This feature uses the <strong>Google Custom Search API</strong> — free for up to 100 searches/day.<br><br>
-        <strong>How to get your keys:</strong><br>
-        1. Go to Google Cloud Console → APIs &amp; Services → Credentials → Create API Key, then enable the "Custom Search API"<br>
-        2. Go to Programmable Search Engine (cse.google.com) → Create a new engine set to search the whole web → copy the Search Engine ID
-      </div>
-      <label class="kw-label" for="kwApiKey">Google API Key</label>
-      <input class="kw-input" type="text" id="kwApiKey" placeholder="AIzaSy..." autocomplete="off" spellcheck="false"/>
-      <div class="kw-gap">
-        <label class="kw-label" for="kwCx">Search Engine ID (CX)</label>
-        <input class="kw-input" type="text" id="kwCx" placeholder="017576662512468239146:omuauf_lfve" autocomplete="off" spellcheck="false"/>
-      </div>
-    </div>
-
     <button class="kw-btn" id="kwBtn" onclick="runKeyword()">Check Ranking</button>
   </div>
 </div>
@@ -492,31 +475,16 @@ function doShare() {
 document.getElementById('urlInput').addEventListener('keydown', e => { if(e.key==='Enter') run(); });
 
 // ─── KEYWORD RANKING ──────────────────────────────────────
-function toggleAdv() {
-  const s = document.getElementById('advSection');
-  s.classList.toggle('open');
-  document.getElementById('advToggle').textContent =
-    s.classList.contains('open') ? '▲ Hide API Settings' : '▼ API Settings (required)';
-}
 
 async function runKeyword() {
   const keyword   = document.getElementById('kwInput').value.trim();
   const targetUrl = document.getElementById('kwTarget').value.trim();
-  const apiKey    = document.getElementById('kwApiKey').value.trim();
-  const cx        = document.getElementById('kwCx').value.trim();
 
   if (!keyword) { showKwErr('Please enter a keyword.'); return; }
-  if (!apiKey || !cx) {
-    showKwErr('Google API key and Search Engine ID are required. Open "API Settings" above to enter them.');
-    document.getElementById('advSection').classList.add('open');
-    document.getElementById('advToggle').textContent = '▲ Hide API Settings';
-    return;
-  }
-
   setKwUI('loading');
 
   try {
-    let q = `keyword=${encodeURIComponent(keyword)}&key=${encodeURIComponent(apiKey)}&cx=${encodeURIComponent(cx)}`;
+    let q = `keyword=${encodeURIComponent(keyword)}`;
     if (targetUrl) q += `&targetUrl=${encodeURIComponent(targetUrl)}`;
     const res  = await fetch(`/api/keyword?${q}`);
     const data = await res.json();
