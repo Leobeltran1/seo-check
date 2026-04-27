@@ -17,7 +17,6 @@ module.exports = async function handler(req, res) {
     const data = await fetchSERP(keyword, key, cx);
     let targetDomain = null;
     let targetRank   = null;
-
     if (targetUrl) {
       try {
         const parsed = new URL(targetUrl.startsWith('http') ? targetUrl : 'https://' + targetUrl);
@@ -31,7 +30,6 @@ module.exports = async function handler(req, res) {
         }
       } catch(e) {}
     }
-
     res.status(200).json({
       keyword,
       totalResults: data.searchInformation?.totalResults,
@@ -64,8 +62,19 @@ function fetchSERP(keyword, key, cx) {
     };
     const req = https.request(options, (response) => {
       const chunks = [];
-      response.on('data', chunk => chunks.push(
-cd ~/seo-check
-git add .
-git commit -m "fix: keyword.js reads API keys from env vars"
-git push origin main
+      response.on('data', chunk => chunks.push(chunk));
+      response.on('end', () => {
+        try {
+          const data = JSON.parse(Buffer.concat(chunks).toString('utf8'));
+          if (data.error) return reject(new Error(data.error.message || 'Google API error'));
+          resolve(data);
+        } catch(e) {
+          reject(new Error('Failed to parse search results'));
+        }
+      });
+    });
+    req.on('error', reject);
+    req.on('timeout', () => { req.destroy(); reject(new Error('Search request timed out')); });
+    req.end();
+  });
+}
