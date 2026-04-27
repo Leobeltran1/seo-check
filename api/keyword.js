@@ -6,15 +6,15 @@ module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
   if (req.method === 'OPTIONS') return res.status(200).end();
 
-  const { keyword, targetUrl, key, cx } = req.query;
+  const { keyword, targetUrl } = req.query;
+  const key = process.env.GOOGLE_API_KEY;
+  const cx  = process.env.GOOGLE_CX;
 
   if (!keyword) return res.status(400).json({ error: 'Keyword is required.' });
-  if (!key)     return res.status(400).json({ error: 'Google API key is required. Get one at Google Cloud Console → APIs & Services → Credentials.' });
-  if (!cx)      return res.status(400).json({ error: 'Search Engine ID (cx) is required. Create one at programmablesearchengine.google.com.' });
+  if (!key || !cx) return res.status(500).json({ error: 'Search API not configured on server.' });
 
   try {
     const data = await fetchSERP(keyword, key, cx);
-
     let targetDomain = null;
     let targetRank   = null;
 
@@ -27,9 +27,9 @@ module.exports = async function handler(req, res) {
           try {
             const itemDomain = new URL(items[i].link).hostname.replace(/^www\./, '');
             if (itemDomain === targetDomain) { targetRank = i + 1; break; }
-          } catch(e) { /* skip malformed item URL */ }
+          } catch(e) {}
         }
-      } catch(e) { /* invalid targetUrl — ignore */ }
+      } catch(e) {}
     }
 
     res.status(200).json({
@@ -64,19 +64,8 @@ function fetchSERP(keyword, key, cx) {
     };
     const req = https.request(options, (response) => {
       const chunks = [];
-      response.on('data', chunk => chunks.push(chunk));
-      response.on('end', () => {
-        try {
-          const data = JSON.parse(Buffer.concat(chunks).toString('utf8'));
-          if (data.error) return reject(new Error(data.error.message || 'Google API error'));
-          resolve(data);
-        } catch(e) {
-          reject(new Error('Failed to parse search results'));
-        }
-      });
-    });
-    req.on('error', reject);
-    req.on('timeout', () => { req.destroy(); reject(new Error('Search request timed out')); });
-    req.end();
-  });
-}
+      response.on('data', chunk => chunks.push(
+cd ~/seo-check
+git add .
+git commit -m "fix: keyword.js reads API keys from env vars"
+git push origin main
