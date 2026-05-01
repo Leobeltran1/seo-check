@@ -369,8 +369,8 @@ function switchView(v){
   document.getElementById('navKeyword').classList.toggle('active',v==='keyword');
   document.getElementById('navSnippet').classList.toggle('active',v==='snippet');
   document.getElementById('navCompare').classList.toggle('active',v==='compare');
-  document.getElementById('pageTitle').textContent={seo:'SEO Check',keyword:'Keyword Ranking',snippet:'Snippet Generator'}[v];
-  document.getElementById('fabBtn').textContent={seo:'+',keyword:'🔎',snippet:'✂️'}[v];
+  document.getElementById('pageTitle').textContent={seo:'SEO Check',keyword:'Keyword Ranking',snippet:'Snippet Generator',compare:'SEO Compare'}[v]||'SEO Check';
+  document.getElementById('fabBtn').textContent={seo:'+',keyword:'🔎',snippet:'✂️',compare:'⚖️'}[v]||'+';
 }
 function fabAction(){if(currentView==='seo')document.getElementById('urlInput').focus();else if(currentView==='keyword')document.getElementById('kwInput').focus();else if (currentView === 'compare') document.getElementById('cmp1').focus();
   else document.getElementById('snipTitle').focus();}
