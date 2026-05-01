@@ -364,9 +364,11 @@ function switchView(v){
   document.getElementById('viewSeo').style.display=v==='seo'?'block':'none';
   document.getElementById('viewKeyword').style.display=v==='keyword'?'block':'none';
   document.getElementById('viewSnippet').style.display=v==='snippet'?'block':'none';
+  document.getElementById('viewCompare').style.display=v==='compare'?'block':'none';
   document.getElementById('navSeo').classList.toggle('active',v==='seo');
   document.getElementById('navKeyword').classList.toggle('active',v==='keyword');
   document.getElementById('navSnippet').classList.toggle('active',v==='snippet');
+  document.getElementById('navCompare').classList.toggle('active',v==='compare');
   document.getElementById('pageTitle').textContent={seo:'SEO Check',keyword:'Keyword Ranking',snippet:'Snippet Generator'}[v];
   document.getElementById('fabBtn').textContent={seo:'+',keyword:'🔎',snippet:'✂️'}[v];
 }
