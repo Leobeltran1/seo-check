@@ -169,6 +169,20 @@ body { font-family: 'DM Sans', sans-serif; background: var(--gray-bg); color: va
 .tip-item { display: flex; align-items: flex-start; gap: 8px; font-size: 12.5px; color: var(--text-mid); line-height: 1.5; margin-bottom: 7px; }
 .tip-item:last-child { margin-bottom: 0; }
 .tip-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; margin-top: 5px; }
+
+.cmp-table { width: 100%; border-collapse: collapse; margin-bottom: 8px; }
+.cmp-table th { background: #3a8fc4; color: #fff; padding: 10px 12px; font-size: 13px; font-weight: 600; font-family: DM Sans, sans-serif; }
+.cmp-table td { padding: 10px 12px; font-size: 13px; border-bottom: 1px solid #dde2e8; font-family: DM Sans, sans-serif; }
+.cmp-table tr:last-child td { border-bottom: none; }
+.cmp-table tr:nth-child(even) td { background: #f8f9fa; }
+.cmp-win { color: #27ae60; font-weight: 700; }
+.cmp-lose { color: #e74c3c; }
+.cmp-tie { color: #f0a500; }
+.cmp-score-card { background: #fff; border-radius: 16px; margin-top: -22px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.07); margin-bottom: 14px; display: flex; gap: 12px; }
+.cmp-score-box { flex: 1; text-align: center; border-radius: 12px; padding: 16px 10px; }
+.cmp-score-box .score { font-size: 36px; font-weight: 700; }
+.cmp-score-box .label { font-size: 11px; color: #8fa0b0; margin-top: 4px; word-break: break-all; }
+
 </style>
 </head>
 <body>
@@ -187,6 +201,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--gray-bg); color: va
   <div class="nav-item active" id="navSeo" onclick="switchView('seo')"><span class="nav-icon">📊</span> SEO Analyzer</div>
   <div class="nav-item" id="navKeyword" onclick="switchView('keyword')"><span class="nav-icon">🔎</span> Keyword Ranking</div>
   <div class="nav-item" id="navSnippet" onclick="switchView('snippet')"><span class="nav-icon">✂️</span> Snippet Generator</div>
+  <div class="nav-item" id="navCompare" onclick="switchView('compare')"><span class="nav-icon">⚖️</span> SEO Compare</div>
 </nav>
 <div id="viewSeo">
   <div class="hero">
@@ -309,6 +324,36 @@ body { font-family: 'DM Sans', sans-serif; background: var(--gray-bg); color: va
     </div>
   </div>
 </div>
+
+<!-- SEO COMPARE VIEW -->
+<div id="viewCompare" style="display:none;">
+  <div class="kw-hero">
+    <div class="kw-box">
+      <label class="kw-label" for="cmp1">Site A</label>
+      <input class="kw-input" type="url" id="cmp1" placeholder="e.g. https://yoursite.com" autocomplete="off" spellcheck="false"/>
+      <div class="kw-gap">
+        <label class="kw-label" for="cmp2">Site B</label>
+        <input class="kw-input" type="url" id="cmp2" placeholder="e.g. https://competitor.com" autocomplete="off" spellcheck="false"/>
+      </div>
+      <button class="kw-btn" id="cmpBtn" onclick="runCompare()">Compare Sites</button>
+    </div>
+  </div>
+  <div class="serp-content">
+    <div class="err-box" id="cmpErrBox"></div>
+    <div class="empty-state" id="cmpEmptyState">
+      <div class="empty-icon">⚖️</div>
+      <div class="empty-title">Compare two websites</div>
+      <div class="empty-sub">Enter two URLs to see a side-by-side<br>SEO breakdown and score comparison.</div>
+    </div>
+    <div class="loading-state" id="cmpLoadingState">
+      <div class="spinner"></div>
+      <div class="loading-txt">Analyzing both sites...</div>
+      <div class="loading-sub">This takes about 15 seconds</div>
+    </div>
+    <div id="cmpResults" style="display:none;"></div>
+  </div>
+</div>
+
 <button class="fab" id="fabBtn" onclick="fabAction()">+</button>
 <script>
 function toggleMenu(){document.getElementById('navDrawer').classList.toggle('open');document.getElementById('menuOverlay').classList.toggle('open');}
@@ -325,7 +370,8 @@ function switchView(v){
   document.getElementById('pageTitle').textContent={seo:'SEO Check',keyword:'Keyword Ranking',snippet:'Snippet Generator'}[v];
   document.getElementById('fabBtn').textContent={seo:'+',keyword:'🔎',snippet:'✂️'}[v];
 }
-function fabAction(){if(currentView==='seo')document.getElementById('urlInput').focus();else if(currentView==='keyword')document.getElementById('kwInput').focus();else document.getElementById('snipTitle').focus();}
+function fabAction(){if(currentView==='seo')document.getElementById('urlInput').focus();else if(currentView==='keyword')document.getElementById('kwInput').focus();else if (currentView === 'compare') document.getElementById('cmp1').focus();
+  else document.getElementById('snipTitle').focus();}
 async function run(){
   let url=document.getElementById('urlInput').value.trim();
   if(!url){showErr('Please enter a URL.');return;}
@@ -436,6 +482,88 @@ function updateSnippet(){
   else tips.push({color:'#27ae60',text:'URL uses HTTPS — great for SEO.'});
   document.getElementById('tipsList').innerHTML='<div class="tips-title">💡 Recommendations</div>'+tips.map(t=>'<div class="tip-item"><div class="tip-dot" style="background:'+t.color+'"></div><span>'+t.text+'</span></div>').join('');
 }
+
+async function runCompare() {
+  const url1 = document.getElementById('cmp1').value.trim();
+  const url2 = document.getElementById('cmp2').value.trim();
+  if (!url1 || !url2) { showCmpErr('Please enter both URLs.'); return; }
+  setCmpUI('loading');
+  try {
+    const res = await fetch('/api/compare?url1=' + encodeURIComponent(url1) + '&url2=' + encodeURIComponent(url2));
+    const data = await res.json();
+    if (!res.ok || data.error) throw new Error(data.error || 'Compare failed');
+    renderCompare(data);
+  } catch(e) { setCmpUI('idle'); showCmpErr('❌ ' + e.message); }
+}
+
+function renderCompare(d) {
+  setCmpUI('results');
+  const s1 = d.site1, s2 = d.site2;
+  const scoreColor = (s) => s >= 75 ? '#27ae60' : s >= 50 ? '#f0a500' : '#e74c3c';
+  const winner = s1.overall > s2.overall ? 'A' : s2.overall > s1.overall ? 'B' : 'Tie';
+
+  const checks = [
+    ['Title Tag', s1.scores.title, s2.scores.title],
+    ['Meta Description', s1.scores.metaDesc, s2.scores.metaDesc],
+    ['H1 Heading', s1.scores.h1, s2.scores.h1],
+    ['HTTPS', s1.scores.https, s2.scores.https],
+    ['Canonical URL', s1.scores.canonical, s2.scores.canonical],
+    ['Viewport / Mobile', s1.scores.viewport, s2.scores.viewport],
+    ['Open Graph Tags', s1.scores.ogTags, s2.scores.ogTags],
+    ['Image Alt Text', s1.scores.images, s2.scores.images],
+    ['Word Count', s1.scores.wordCount, s2.scores.wordCount],
+    ['Structured Data', s1.scores.structuredData, s2.scores.structuredData],
+  ];
+
+  const shortUrl = (u) => { try { return new URL(u).hostname.replace(/^www\./, ''); } catch(e) { return u; } };
+
+  const rows = checks.map(([label, a, b]) => {
+    const aCls = a > b ? 'cmp-win' : a < b ? 'cmp-lose' : 'cmp-tie';
+    const bCls = b > a ? 'cmp-win' : b < a ? 'cmp-lose' : 'cmp-tie';
+    return '<tr><td>' + label + '</td><td class="' + aCls + '">' + a + '%</td><td class="' + bCls + '">' + b + '%</td></tr>';
+  }).join('');
+
+  document.getElementById('cmpResults').innerHTML =
+    '<div class="cmp-score-card">' +
+      '<div class="cmp-score-box" style="background:' + scoreColor(s1.overall) + '22;border:2px solid ' + scoreColor(s1.overall) + '">' +
+        '<div class="score" style="color:' + scoreColor(s1.overall) + '">' + s1.overall + '%</div>' +
+        '<div class="label">Site A — ' + shortUrl(s1.url) + '</div>' +
+      '</div>' +
+      '<div style="display:flex;align-items:center;font-size:20px;font-weight:700;color:#8fa0b0;">vs</div>' +
+      '<div class="cmp-score-box" style="background:' + scoreColor(s2.overall) + '22;border:2px solid ' + scoreColor(s2.overall) + '">' +
+        '<div class="score" style="color:' + scoreColor(s2.overall) + '">' + s2.overall + '%</div>' +
+        '<div class="label">Site B — ' + shortUrl(s2.url) + '</div>' +
+      '</div>' +
+    '</div>' +
+    '<div class="sec-title" style="margin-top:8px;">Side-by-Side Breakdown</div>' +
+    '<div style="background:#fff;border-radius:13px;box-shadow:0 2px 10px rgba(0,0,0,0.07);overflow:hidden;">' +
+      '<table class="cmp-table">' +
+        '<thead><tr><th>Check</th><th>' + shortUrl(s1.url) + '</th><th>' + shortUrl(s2.url) + '</th></tr></thead>' +
+        '<tbody>' + rows + '</tbody>' +
+      '</table>' +
+    '</div>' +
+    '<div style="background:#fff;border-radius:13px;padding:16px;margin-top:10px;box-shadow:0 2px 10px rgba(0,0,0,0.07);text-align:center;">' +
+      '<div style="font-size:13px;color:#8fa0b0;margin-bottom:4px;">WINNER</div>' +
+      '<div style="font-size:22px;font-weight:700;color:' + (winner==='Tie'?'#f0a500':'#27ae60') + '">' +
+        (winner==='Tie' ? 'Tie — Both sites scored equally' : 'Site ' + winner + ' — ' + shortUrl(winner==='A'?s1.url:s2.url)) +
+      '</div>' +
+    '</div>';
+}
+
+function setCmpUI(state) {
+  document.getElementById('cmpEmptyState').style.display = state==='idle' ? 'block' : 'none';
+  document.getElementById('cmpLoadingState').classList.toggle('visible', state==='loading');
+  document.getElementById('cmpResults').style.display = state==='results' ? 'block' : 'none';
+  document.getElementById('cmpErrBox').classList.remove('visible');
+  const btn = document.getElementById('cmpBtn');
+  btn.disabled = state==='loading';
+  btn.textContent = state==='loading' ? 'Analyzing...' : 'Compare Sites';
+}
+
+function showCmpErr(msg) { const el = document.getElementById('cmpErrBox'); el.textContent = msg; el.classList.add('visible'); }
+document.getElementById('cmp1').addEventListener('keydown', e => { if(e.key==='Enter') runCompare(); });
+document.getElementById('cmp2').addEventListener('keydown', e => { if(e.key==='Enter') runCompare(); });
+
 </script>
 </body>
 </html>
