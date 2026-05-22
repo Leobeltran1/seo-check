@@ -66,7 +66,7 @@ async function handleLogin(){
     if(data.error||data.error_description){err.textContent=data.error_description||data.error?.message||'Login failed.';err.classList.add('visible');btn.textContent='Log in →';btn.disabled=false;return;}
     localStorage.setItem('seorocket_token',data.access_token);
     localStorage.setItem('seorocket_user',JSON.stringify(data.user));
-    window.location.href='app.html';
+    window.location.href='dashboard.html';
   }catch(e){err.textContent='Could not connect. Please try again.';err.classList.add('visible');btn.textContent='Log in →';btn.disabled=false;}
 }
 document.addEventListener('keydown',e=>{if(e.key==='Enter')handleLogin();});
