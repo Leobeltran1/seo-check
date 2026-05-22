@@ -215,6 +215,62 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--off
 .bl-note { background: #eaf3fa; border-radius: 10px; padding: 12px 14px; font-size: 12.5px; color: #526070; line-height: 1.6; margin-top: 14px; }
 
 </style>
+
+<script>
+const SUPA_URL = 'https://jjfojqvhcecyxmstpmxl.supabase.co';
+const SUPA_KEY = 'sb_publishable_631aiLjc7Kyv1bSNeNSYDg_xbuMdDCD';
+
+function getToken() { return localStorage.getItem('seorocket_token'); }
+function getUser() {
+  try { return JSON.parse(localStorage.getItem('seorocket_user')); } catch(e) { return null; }
+}
+
+async function saveAudit(url, overall, scores) {
+  const token = getToken();
+  const user = getUser();
+  if (!token || !user) return;
+  try {
+    await fetch(SUPA_URL + '/rest/v1/audits', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': SUPA_KEY,
+        'Authorization': 'Bearer ' + token,
+        'Prefer': 'return=minimal'
+      },
+      body: JSON.stringify({
+        user_id: user.id,
+        url,
+        overall_score: overall,
+        scores
+      })
+    });
+  } catch(e) { console.log('Could not save audit', e); }
+}
+
+async function saveKeywordSearch(keyword, results) {
+  const token = getToken();
+  const user = getUser();
+  if (!token || !user) return;
+  try {
+    await fetch(SUPA_URL + '/rest/v1/keyword_searches', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': SUPA_KEY,
+        'Authorization': 'Bearer ' + token,
+        'Prefer': 'return=minimal'
+      },
+      body: JSON.stringify({
+        user_id: user.id,
+        keyword,
+        results
+      })
+    });
+  } catch(e) { console.log('Could not save search', e); }
+}
+</script>
+
 </head>
 <body>
 <div class="header">
@@ -507,6 +563,7 @@ function render(d){
     });
     area.innerHTML+=h;
   });
+  saveAudit(d.url, d.overall, d.scores);
   area.innerHTML+='<div class="data-note">Live audit · '+new Date(d.meta?.analyzedAt||Date.now()).toLocaleString()+'</div><div class="about-box"><h3>About SEO Check</h3><p>Real data from HTML parsing + Google Lighthouse. Fix the items above to improve your search rankings.</p></div>';
 }
 function animNum(id,target,suffix){const el=document.getElementById(id);let cur=0;const step=Math.max(1,target/40);const iv=setInterval(()=>{cur=Math.min(cur+step,target);el.textContent=Math.round(cur)+suffix;if(cur>=target)clearInterval(iv);},28);}
@@ -527,6 +584,7 @@ function renderKeyword(d){
   setKwUI('results');
   const badge=document.getElementById('rankBadge');
   if(d.targetDomain){badge.classList.add('visible');const circle=document.getElementById('rankCircle');const info=document.getElementById('rankInfo');if(d.targetRank){circle.className='rank-circle found';circle.textContent='#'+d.targetRank;info.innerHTML='<h3>'+d.targetDomain+' ranks #'+d.targetRank+'</h3><p>For the keyword "<strong>'+d.keyword+'</strong>" in Google search results.</p>';}else{circle.className='rank-circle not-found';circle.textContent='—';info.innerHTML='<h3>Not in top 10</h3><p>'+d.targetDomain+' does not appear in the top 10 results for "<strong>'+d.keyword+'</strong>".</p>';}}else{badge.classList.remove('visible');}
+  saveKeywordSearch(d.keyword, {items: d.items, totalResults: d.totalResults});
   document.getElementById('serpMeta').textContent=d.totalResults?'About '+parseInt(d.totalResults).toLocaleString()+' results · '+d.searchTime+'s':'';
   const td=d.targetDomain;
   document.getElementById('serpList').innerHTML=d.items.map(item=>{const isTarget=td&&item.displayLink&&item.displayLink.replace(/^www\./,'')===td;const rankCls=isTarget?'is-you':item.rank<=3?'top-3':'';return '<div class="serp-item'+(isTarget?' is-target':'')+'"><div class="serp-rank-num '+rankCls+'">#'+item.rank+(isTarget?' — YOUR SITE':'')+'</div><div class="serp-disp-url">'+item.displayLink+'</div><div class="serp-title">'+item.title+'</div><div class="serp-snippet">'+(item.snippet||'')+'</div></div>';}).join('');
