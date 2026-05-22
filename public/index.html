@@ -145,5 +145,17 @@ footer p{font-size:13px;color:var(--dim);}
   <div class="footer-logo">🚀 SEO<span class="r">rocket</span></div>
   <p>Free SEO tools for everyone. Built with ❤️</p>
 </footer>
+
+<script>
+if(localStorage.getItem('seorocket_token')){
+  const d = document.getElementById('dashLink');
+  const s = document.getElementById('signupLink');
+  const l = document.querySelector('a[href="login.html"]');
+  if(d) d.style.display='inline-block';
+  if(s) s.style.display='none';
+  if(l) l.style.display='none';
+}
+</script>
+
 </body>
 </html>

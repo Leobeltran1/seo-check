@@ -564,7 +564,7 @@ function render(d){
     area.innerHTML+=h;
   });
   saveAudit(d.url, d.overall, d.scores);
-  area.innerHTML+='<div class="data-note">Live audit · '+new Date(d.meta?.analyzedAt||Date.now()).toLocaleString()+'</div><div class="about-box"><h3>About SEO Check</h3><p>Real data from HTML parsing + Google Lighthouse. Fix the items above to improve your search rankings.</p></div>';
+  area.innerHTML+='<div class="data-note">Live audit · '+new Date(d.meta?.analyzedAt||Date.now()).toLocaleString()+'</div><div class="about-box"><h3>About SEOrocket</h3><p>Real data from HTML parsing + Google Lighthouse. Fix the items above to rocket your search rankings. 🚀</p></div>';
 }
 function animNum(id,target,suffix){const el=document.getElementById(id);let cur=0;const step=Math.max(1,target/40);const iv=setInterval(()=>{cur=Math.min(cur+step,target);el.textContent=Math.round(cur)+suffix;if(cur>=target)clearInterval(iv);},28);}
 function setUI(state){document.getElementById('emptyState').style.display=(state==='empty'||state==='error')?'block':'none';document.getElementById('loadingState').classList.toggle('visible',state==='loading');document.getElementById('scoreCard').classList.toggle('visible',state==='results');document.getElementById('resultsArea').style.display=state==='results'?'block':'none';document.getElementById('errBox').classList.remove('visible');const btn=document.getElementById('analyzeBtn');btn.disabled=state==='loading';btn.textContent=state==='loading'?'...':'Analyze';}
