@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard — SEOrocket</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{--bg:#0a0a0f;--bg2:#111118;--card:#16161f;--red:#e63946;--red-glow:rgba(230,57,70,0.25);--off-white:#f0ede8;--mid:#94a3b8;--dim:#475569;--border:rgba(255,255,255,0.07);--green:#10b981;--yellow:#f59e0b;}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--off-white);min-height:100vh;}
+a{text-decoration:none;color:inherit;}
+
+/* NAV */
+nav{position:sticky;top:0;z-index:100;padding:14px 32px;display:flex;align-items:center;justify-content:space-between;background:rgba(10,10,15,0.9);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);}
+.nav-logo{font-size:18px;font-weight:900;}
+.nav-logo .r{color:var(--red);}
+.nav-right{display:flex;align-items:center;gap:12px;}
+.nav-btn{background:none;border:1px solid var(--border);color:var(--mid);padding:7px 16px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;font-family:'Inter',sans-serif;transition:all .2s;}
+.nav-btn:hover{border-color:var(--red);color:var(--off-white);}
+.nav-btn-red{background:var(--red);color:#fff;border:none;padding:7px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;}
+.user-avatar{width:34px;height:34px;border-radius:50%;background:var(--red);color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;cursor:pointer;}
+
+/* LAYOUT */
+.container{max-width:1100px;margin:0 auto;padding:40px 32px 80px;}
+
+/* WELCOME */
+.welcome{margin-bottom:40px;}
+.welcome h1{font-size:28px;font-weight:800;letter-spacing:-0.5px;margin-bottom:6px;}
+.welcome p{font-size:15px;color:var(--mid);}
+.welcome span{color:var(--red);}
+
+/* STATS ROW */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:40px;}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px 24px;}
+.stat-card .val{font-size:32px;font-weight:900;color:var(--red);letter-spacing:-1px;}
+.stat-card .lbl{font-size:13px;color:var(--mid);margin-top:4px;}
+.stat-card .trend{font-size:12px;color:var(--green);margin-top:8px;}
+
+/* GRID */
+.dash-grid{display:grid;grid-template-columns:2fr 1fr;gap:24px;}
+
+/* SECTIONS */
+.section{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:24px;}
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;}
+.section-title{font-size:16px;font-weight:700;}
+.section-action{font-size:13px;color:var(--red);cursor:pointer;font-weight:500;}
+.section-action:hover{opacity:0.8;}
+
+/* AUDIT ITEMS */
+.audit-item{display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid var(--border);}
+.audit-item:last-child{border-bottom:none;padding-bottom:0;}
+.audit-score{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;flex-shrink:0;}
+.score-green{background:rgba(16,185,129,0.1);color:var(--green);}
+.score-yellow{background:rgba(245,158,11,0.1);color:var(--yellow);}
+.score-red{background:rgba(230,57,70,0.1);color:var(--red);}
+.audit-info{flex:1;min-width:0;}
+.audit-url{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:3px;}
+.audit-date{font-size:12px;color:var(--dim);}
+.audit-arrow{color:var(--dim);font-size:18px;flex-shrink:0;}
+
+/* KEYWORD ITEMS */
+.kw-item{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border);}
+.kw-item:last-child{border-bottom:none;padding-bottom:0;}
+.kw-text{font-size:14px;font-weight:500;}
+.kw-date{font-size:12px;color:var(--dim);}
+.kw-badge{font-size:11px;font-weight:600;padding:3px 8px;border-radius:100px;background:rgba(59,130,246,0.1);color:#60a5fa;}
+
+/* QUICK ACTIONS */
+.actions-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.action-btn{background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:12px;padding:14px;text-align:center;cursor:pointer;transition:all .2s;display:block;}
+.action-btn:hover{border-color:rgba(230,57,70,0.4);background:rgba(230,57,70,0.05);}
+.action-btn .icon{font-size:22px;margin-bottom:6px;}
+.action-btn .name{font-size:12px;font-weight:600;color:var(--mid);}
+
+/* ACCOUNT CARD */
+.account-section{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;}
+.account-avatar{width:60px;height:60px;border-radius:50%;background:var(--red);color:#fff;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:800;margin:0 auto 16px;}
+.account-email{text-align:center;font-size:14px;font-weight:600;margin-bottom:4px;}
+.account-since{text-align:center;font-size:12px;color:var(--dim);margin-bottom:20px;}
+.account-divider{height:1px;background:var(--border);margin:16px 0;}
+.logout-btn{width:100%;background:rgba(230,57,70,0.1);border:1px solid rgba(230,57,70,0.2);color:var(--red);padding:10px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:all .2s;}
+.logout-btn:hover{background:rgba(230,57,70,0.2);}
+
+/* EMPTY STATE */
+.empty{text-align:center;padding:32px 20px;color:var(--dim);}
+.empty .icon{font-size:32px;margin-bottom:10px;}
+.empty p{font-size:13px;}
+
+/* LOADING */
+.loading{text-align:center;padding:32px;color:var(--dim);}
+.spinner{width:28px;height:28px;border:3px solid var(--border);border-top-color:var(--red);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 10px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+@media(max-width:768px){
+  .container{padding:24px 16px 60px;}
+  .stats-row{grid-template-columns:1fr 1fr;}
+  .dash-grid{grid-template-columns:1fr;}
+  nav{padding:14px 16px;}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-logo">🚀 SEO<span class="r">rocket</span></a>
+  <div class="nav-right">
+    <a href="app.html" class="nav-btn">Launch App</a>
+    <div class="user-avatar" id="userAvatar">?</div>
+  </div>
+</nav>
+
+<div class="container">
+
+  <!-- WELCOME -->
+  <div class="welcome">
+    <h1>Welcome back, <span id="userName">there</span> 👋</h1>
+    <p>Here's an overview of your SEO activity.</p>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="val" id="totalAudits">—</div>
+      <div class="lbl">Total Audits</div>
+      <div class="trend">↑ All time</div>
+    </div>
+    <div class="stat-card">
+      <div class="val" id="avgScore">—</div>
+      <div class="lbl">Avg SEO Score</div>
+      <div class="trend">Across all audits</div>
+    </div>
+    <div class="stat-card">
+      <div class="val" id="totalKeywords">—</div>
+      <div class="lbl">Keywords Tracked</div>
+      <div class="trend">↑ All time</div>
+    </div>
+    <div class="stat-card">
+      <div class="val" id="memberDays">—</div>
+      <div class="lbl">Days Active</div>
+      <div class="trend">Keep it up!</div>
+    </div>
+  </div>
+
+  <div class="dash-grid">
+    <div>
+      <!-- RECENT AUDITS -->
+      <div class="section">
+        <div class="section-header">
+          <div class="section-title">Recent SEO Audits</div>
+          <a href="app.html" class="section-action">+ New Audit</a>
+        </div>
+        <div id="auditsList"><div class="loading"><div class="spinner"></div><p>Loading audits...</p></div></div>
+      </div>
+
+      <!-- RECENT KEYWORDS -->
+      <div class="section">
+        <div class="section-header">
+          <div class="section-title">Recent Keyword Searches</div>
+          <a href="app.html" class="section-action">+ New Search</a>
+        </div>
+        <div id="keywordsList"><div class="loading"><div class="spinner"></div><p>Loading searches...</p></div></div>
+      </div>
+    </div>
+
+    <div>
+      <!-- QUICK ACTIONS -->
+      <div class="section" style="margin-bottom:24px;">
+        <div class="section-header">
+          <div class="section-title">Quick Actions</div>
+        </div>
+        <div class="actions-grid">
+          <a href="app.html" class="action-btn"><div class="icon">📊</div><div class="name">SEO Analyzer</div></a>
+          <a href="app.html" class="action-btn"><div class="icon">🔎</div><div class="name">Keyword Rank</div></a>
+          <a href="app.html" class="action-btn"><div class="icon">✂️</div><div class="name">Snippet Gen</div></a>
+          <a href="app.html" class="action-btn"><div class="icon">⚖️</div><div class="name">SEO Compare</div></a>
+          <a href="app.html" class="action-btn"><div class="icon">🔑</div><div class="name">Keyword Research</div></a>
+          <a href="app.html" class="action-btn"><div class="icon">🔗</div><div class="name">Backlinks</div></a>
+        </div>
+      </div>
+
+      <!-- ACCOUNT -->
+      <div class="account-section">
+        <div class="account-avatar" id="accountAvatar">?</div>
+        <div class="account-email" id="accountEmail">Loading...</div>
+        <div class="account-since" id="accountSince">Member since —</div>
+        <div class="account-divider"></div>
+        <button class="logout-btn" onclick="logout()">Log out</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const SUPA_URL = 'https://jjfojqvhcecyxmstpmxl.supabase.co';
+const SUPA_KEY = 'sb_publishable_631aiLjc7Kyv1bSNeNSYDg_xbuMdDCD';
+
+// Auth check
+const token = localStorage.getItem('seorocket_token');
+const userStr = localStorage.getItem('seorocket_user');
+if(!token || !userStr){ window.location.href = 'login.html'; }
+
+const user = JSON.parse(userStr || '{}');
+const email = user.email || '';
+const initial = email ? email[0].toUpperCase() : '?';
+const createdAt = user.created_at ? new Date(user.created_at) : new Date();
+const daysSince = Math.max(1, Math.floor((Date.now() - createdAt.getTime()) / 86400000));
+
+// Set user info
+document.getElementById('userAvatar').textContent = initial;
+document.getElementById('accountAvatar').textContent = initial;
+document.getElementById('accountEmail').textContent = email;
+document.getElementById('accountSince').textContent = 'Member since ' + createdAt.toLocaleDateString('en-US', {month:'long', year:'numeric'});
+document.getElementById('userName').textContent = email.split('@')[0];
+document.getElementById('memberDays').textContent = daysSince;
+
+// Load audits
+async function loadAudits(){
+  try{
+    const res = await fetch(SUPA_URL+'/rest/v1/audits?user_id=eq.'+user.id+'&order=created_at.desc&limit=5',{
+      headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+token}
+    });
+    const data = await res.json();
+    document.getElementById('totalAudits').textContent = data.length || 0;
+    const scores = data.map(a => a.overall_score).filter(Boolean);
+    document.getElementById('avgScore').textContent = scores.length ? Math.round(scores.reduce((a,b)=>a+b,0)/scores.length)+'%' : '—';
+    if(!data.length){
+      document.getElementById('auditsList').innerHTML = '<div class="empty"><div class="icon">📊</div><p>No audits yet. <a href="app.html" style="color:var(--red)">Run your first audit →</a></p></div>';
+      return;
+    }
+    document.getElementById('auditsList').innerHTML = data.map(a => {
+      const score = a.overall_score || 0;
+      const cls = score >= 75 ? 'score-green' : score >= 50 ? 'score-yellow' : 'score-red';
+      const date = new Date(a.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+      const domain = (() => { try{ return new URL(a.url).hostname.replace(/^www\./,''); }catch(e){ return a.url; } })();
+      return '<div class="audit-item"><div class="audit-score '+cls+'">'+score+'%</div><div class="audit-info"><div class="audit-url">'+domain+'</div><div class="audit-date">'+date+'</div></div><span class="audit-arrow">→</span></div>';
+    }).join('');
+  }catch(e){
+    document.getElementById('auditsList').innerHTML = '<div class="empty"><p>Could not load audits.</p></div>';
+  }
+}
+
+// Load keyword searches
+async function loadKeywords(){
+  try{
+    const res = await fetch(SUPA_URL+'/rest/v1/keyword_searches?user_id=eq.'+user.id+'&order=created_at.desc&limit=5',{
+      headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+token}
+    });
+    const data = await res.json();
+    document.getElementById('totalKeywords').textContent = data.length || 0;
+    if(!data.length){
+      document.getElementById('keywordsList').innerHTML = '<div class="empty"><div class="icon">🔑</div><p>No searches yet. <a href="app.html" style="color:var(--red)">Search a keyword →</a></p></div>';
+      return;
+    }
+    document.getElementById('keywordsList').innerHTML = data.map(k => {
+      const date = new Date(k.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric'});
+      return '<div class="kw-item"><div><div class="kw-text">'+k.keyword+'</div><div class="kw-date">'+date+'</div></div><span class="kw-badge">searched</span></div>';
+    }).join('');
+  }catch(e){
+    document.getElementById('keywordsList').innerHTML = '<div class="empty"><p>Could not load searches.</p></div>';
+  }
+}
+
+function logout(){
+  localStorage.removeItem('seorocket_token');
+  localStorage.removeItem('seorocket_user');
+  window.location.href = 'index.html';
+}
+
+loadAudits();
+loadKeywords();
+</script>
+</body>
+</html>
