@@ -183,6 +183,34 @@ body { font-family: 'DM Sans', sans-serif; background: var(--gray-bg); color: va
 .cmp-score-box .score { font-size: 36px; font-weight: 700; }
 .cmp-score-box .label { font-size: 11px; color: #8fa0b0; margin-top: 4px; word-break: break-all; }
 
+
+.kr-metric-row { display: flex; gap: 10px; margin-bottom: 14px; }
+.kr-metric { flex: 1; background: #fff; border-radius: 13px; padding: 14px 10px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.07); }
+.kr-metric .val { font-size: 22px; font-weight: 700; color: #1e2d3d; }
+.kr-metric .lbl { font-size: 11px; color: #8fa0b0; margin-top: 4px; }
+.kr-tag { display: inline-block; background: #eaf3fa; color: #2e86c1; border-radius: 20px; padding: 6px 14px; font-size: 13px; margin: 4px; cursor: pointer; transition: all .2s; }
+.kr-tag:hover { background: #2e86c1; color: #fff; }
+.kr-question { background: #fff; border-radius: 10px; padding: 12px 14px; margin-bottom: 7px; box-shadow: 0 2px 10px rgba(0,0,0,0.07); font-size: 13.5px; color: #526070; border-left: 3px solid #3a8fc4; }
+.kr-diff-bar { height: 8px; background: #dde2e8; border-radius: 10px; overflow: hidden; margin-top: 6px; }
+.kr-diff-fill { height: 100%; border-radius: 10px; transition: width 0.8s ease; }
+
+
+.bl-card { background: #fff; border-radius: 16px; margin-top: -22px; padding: 24px 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.07); margin-bottom: 14px; }
+.bl-score-wrap { display: flex; align-items: center; justify-content: center; margin-bottom: 20px; }
+.bl-ring-wrap { position: relative; width: 130px; height: 130px; flex-shrink: 0; }
+.bl-ring-wrap svg { transform: rotate(-90deg); width: 130px; height: 130px; }
+.bl-ring-bg { fill: none; stroke: #eee; stroke-width: 10; }
+.bl-ring-fill { fill: none; stroke-width: 10; stroke-linecap: round; stroke-dasharray: 345; stroke-dashoffset: 345; transition: stroke-dashoffset 1.3s cubic-bezier(.4,0,.2,1); }
+.bl-score-num { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); font-size: 32px; font-weight: 700; color: #1e2d3d; text-align: center; line-height: 1; }
+.bl-score-sub { font-size: 11px; color: #8fa0b0; text-align: center; margin-top: 4px; }
+.bl-metrics { display: flex; gap: 10px; margin-top: 16px; }
+.bl-metric { flex: 1; background: #f0f2f5; border-radius: 12px; padding: 14px 10px; text-align: center; }
+.bl-metric .val { font-size: 20px; font-weight: 700; color: #1e2d3d; }
+.bl-metric .lbl { font-size: 11px; color: #8fa0b0; margin-top: 3px; }
+.bl-domain { text-align: center; font-size: 15px; font-weight: 600; color: #2e86c1; margin-bottom: 4px; font-family: DM Mono, monospace; }
+.bl-stars { text-align: center; font-size: 22px; margin-bottom: 4px; }
+.bl-note { background: #eaf3fa; border-radius: 10px; padding: 12px 14px; font-size: 12.5px; color: #526070; line-height: 1.6; margin-top: 14px; }
+
 </style>
 </head>
 <body>
@@ -202,6 +230,8 @@ body { font-family: 'DM Sans', sans-serif; background: var(--gray-bg); color: va
   <div class="nav-item" id="navKeyword" onclick="switchView('keyword')"><span class="nav-icon">🔎</span> Keyword Ranking</div>
   <div class="nav-item" id="navSnippet" onclick="switchView('snippet')"><span class="nav-icon">✂️</span> Snippet Generator</div>
   <div class="nav-item" id="navCompare" onclick="switchView('compare')"><span class="nav-icon">⚖️</span> SEO Compare</div>
+  <div class="nav-item" id="navKeywords" onclick="switchView('keywords')"><span class="nav-icon">��</span> Keyword Research</div>
+  <div class="nav-item" id="navBacklinks" onclick="switchView('backlinks')"><span class="nav-icon">🔗</span> Backlink Checker</div>
 </nav>
 <div id="viewSeo">
   <div class="hero">
@@ -354,6 +384,56 @@ body { font-family: 'DM Sans', sans-serif; background: var(--gray-bg); color: va
   </div>
 </div>
 
+
+<div id="viewKeywords" style="display:none;">
+  <div class="kw-hero">
+    <div class="kw-box">
+      <label class="kw-label" for="krInput">Keyword</label>
+      <input class="kw-input" type="text" id="krInput" placeholder="e.g. network cabling south florida" autocomplete="off" spellcheck="false"/>
+      <button class="kw-btn" id="krBtn" onclick="runKeywords()">Research Keyword</button>
+    </div>
+  </div>
+  <div class="serp-content">
+    <div class="err-box" id="krErrBox"></div>
+    <div class="empty-state" id="krEmptyState">
+      <div class="empty-icon">🔑</div>
+      <div class="empty-title">Research any keyword</div>
+      <div class="empty-sub">Get related keywords, questions people ask,<br>competition level, and keyword difficulty.</div>
+    </div>
+    <div class="loading-state" id="krLoadingState">
+      <div class="spinner"></div>
+      <div class="loading-txt">Researching keyword...</div>
+      <div class="loading-sub">Pulling data from Google</div>
+    </div>
+    <div id="krResults" style="display:none;"></div>
+  </div>
+</div>
+
+
+<div id="viewBacklinks" style="display:none;">
+  <div class="kw-hero">
+    <div class="kw-box">
+      <label class="kw-label" for="blInput">Website URL or Domain</label>
+      <input class="kw-input" type="text" id="blInput" placeholder="e.g. https://yourwebsite.com" autocomplete="off" spellcheck="false"/>
+      <button class="kw-btn" id="blBtn" onclick="runBacklinks()">Check Backlinks</button>
+    </div>
+  </div>
+  <div class="serp-content">
+    <div class="err-box" id="blErrBox"></div>
+    <div class="empty-state" id="blEmptyState">
+      <div class="empty-icon">🔗</div>
+      <div class="empty-title">Check domain authority</div>
+      <div class="empty-sub">Enter any website to see its Open Page Rank,<br>domain strength, and global ranking.</div>
+    </div>
+    <div class="loading-state" id="blLoadingState">
+      <div class="spinner"></div>
+      <div class="loading-txt">Checking backlink data...</div>
+      <div class="loading-sub">Pulling domain authority data</div>
+    </div>
+    <div id="blResults" style="display:none;"></div>
+  </div>
+</div>
+
 <button class="fab" id="fabBtn" onclick="fabAction()">+</button>
 <script>
 function toggleMenu(){document.getElementById('navDrawer').classList.toggle('open');document.getElementById('menuOverlay').classList.toggle('open');}
@@ -365,14 +445,20 @@ function switchView(v){
   document.getElementById('viewKeyword').style.display=v==='keyword'?'block':'none';
   document.getElementById('viewSnippet').style.display=v==='snippet'?'block':'none';
   document.getElementById('viewCompare').style.display=v==='compare'?'block':'none';
+  document.getElementById('viewKeywords').style.display=v==='keywords'?'block':'none';
+  document.getElementById('viewBacklinks').style.display=v==='backlinks'?'block':'none';
   document.getElementById('navSeo').classList.toggle('active',v==='seo');
   document.getElementById('navKeyword').classList.toggle('active',v==='keyword');
   document.getElementById('navSnippet').classList.toggle('active',v==='snippet');
   document.getElementById('navCompare').classList.toggle('active',v==='compare');
-  document.getElementById('pageTitle').textContent={seo:'SEO Check',keyword:'Keyword Ranking',snippet:'Snippet Generator',compare:'SEO Compare'}[v]||'SEO Check';
-  document.getElementById('fabBtn').textContent={seo:'+',keyword:'🔎',snippet:'✂️',compare:'⚖️'}[v]||'+';
+  document.getElementById('navKeywords').classList.toggle('active',v==='keywords');
+  document.getElementById('navBacklinks').classList.toggle('active',v==='backlinks');
+  document.getElementById('pageTitle').textContent={seo:'SEO Check',keyword:'Keyword Ranking',snippet:'Snippet Generator',compare:'SEO Compare',keywords:'Keyword Research',backlinks:'Backlink Checker'}[v]||'SEO Check';
+  document.getElementById('fabBtn').textContent={seo:'+',keyword:'🔎',snippet:'✂️',compare:'⚖️',keywords:'🔑',backlinks:'🔗'}[v]||'+';
 }
 function fabAction(){if(currentView==='seo')document.getElementById('urlInput').focus();else if(currentView==='keyword')document.getElementById('kwInput').focus();else if (currentView === 'compare') document.getElementById('cmp1').focus();
+  else if (currentView === 'keywords') document.getElementById('krInput').focus();
+  else if (currentView === 'backlinks') document.getElementById('blInput').focus();
   else document.getElementById('snipTitle').focus();}
 async function run(){
   let url=document.getElementById('urlInput').value.trim();
@@ -431,7 +517,7 @@ async function runKeyword(){
   if(!keyword){showKwErr('Please enter a keyword.');return;}
   setKwUI('loading');
   try{let q='keyword='+encodeURIComponent(keyword);if(targetUrl)q+='&targetUrl='+encodeURIComponent(targetUrl);const res=await fetch('/api/keyword?'+q);const data=await res.json();if(!res.ok||data.error)throw new Error(data.error||'Search failed');renderKeyword(data);}
-  catch(e){setKwUI('idle');showKwErr('❌ '+e.message);}
+  catch(e){setKwUI('idle');showKwErr('❌ '+(e.message.includes('fetch')||e.message.includes('Network')?'Could not reach the server. Please try again in a moment.':e.message));}
 }
 function renderKeyword(d){
   setKwUI('results');
@@ -565,6 +651,121 @@ function setCmpUI(state) {
 function showCmpErr(msg) { const el = document.getElementById('cmpErrBox'); el.textContent = msg; el.classList.add('visible'); }
 document.getElementById('cmp1').addEventListener('keydown', e => { if(e.key==='Enter') runCompare(); });
 document.getElementById('cmp2').addEventListener('keydown', e => { if(e.key==='Enter') runCompare(); });
+
+
+async function runKeywords() {
+  const keyword = document.getElementById('krInput').value.trim();
+  if (!keyword) { showKrErr('Please enter a keyword.'); return; }
+  setKrUI('loading');
+  try {
+    const res = await fetch('/api/keywords?keyword=' + encodeURIComponent(keyword));
+    const data = await res.json();
+    if (!res.ok || data.error) throw new Error(data.error || 'Research failed');
+    renderKeywords(data);
+  } catch(e) { setKrUI('idle'); showKrErr('❌ ' + e.message); }
+}
+
+function renderKeywords(d) {
+  setKrUI('results');
+  const m = d.metrics;
+  const diffColor = m.difficulty >= 70 ? '#e74c3c' : m.difficulty >= 40 ? '#f0a500' : '#27ae60';
+
+  let html = '<div class="kr-metric-row">' +
+    '<div class="kr-metric"><div class="val" style="color:' + m.competitionColor + '">' + m.competition + '</div><div class="lbl">Competition</div></div>' +
+    '<div class="kr-metric"><div class="val" style="color:' + diffColor + '">' + m.difficulty + '/100</div><div class="lbl">Difficulty</div><div class="kr-diff-bar"><div class="kr-diff-fill" style="width:' + m.difficulty + '%;background:' + diffColor + '"></div></div></div>' +
+    '<div class="kr-metric"><div class="val">' + (m.hasAds ? 'Yes' : 'No') + '</div><div class="lbl">Paid Ads</div></div>' +
+  '</div>';
+
+  if (d.suggestions && d.suggestions.length) {
+    html += '<div class="sec-title">Related Keywords</div>';
+    html += '<div style="background:#fff;border-radius:13px;padding:14px;box-shadow:0 2px 10px rgba(0,0,0,0.07);margin-bottom:14px;">';
+    html += d.suggestions.map(s => '<span class="kr-tag" onclick="setKrKeyword(this)" data-kw="' + s.replace(/"/g,'') + '">' + s + '</span>').join('');
+    html += '</div>';
+  }
+
+  if (d.questions && d.questions.length) {
+    html += '<div class="sec-title">People Also Ask</div>';
+    html += d.questions.map(q => '<div class="kr-question">❓ ' + q + '</div>').join('');
+  }
+
+  if (d.relatedSearches && d.relatedSearches.length) {
+    html += '<div class="sec-title">Related Searches</div>';
+    html += '<div style="background:#fff;border-radius:13px;padding:14px;box-shadow:0 2px 10px rgba(0,0,0,0.07);margin-bottom:14px;">';
+    html += d.relatedSearches.map(s => '<span class="kr-tag" onclick="setKrKeyword(this)" data-kw="' + s.replace(/"/g,'') + '">' + s + '</span>').join('');
+    html += '</div>';
+  }
+
+  document.getElementById('krResults').innerHTML = html;
+}
+
+function setKrUI(state) {
+  document.getElementById('krEmptyState').style.display = state==='idle' ? 'block' : 'none';
+  document.getElementById('krLoadingState').classList.toggle('visible', state==='loading');
+  document.getElementById('krResults').style.display = state==='results' ? 'block' : 'none';
+  document.getElementById('krErrBox').classList.remove('visible');
+  const btn = document.getElementById('krBtn');
+  btn.disabled = state==='loading';
+  btn.textContent = state==='loading' ? 'Researching...' : 'Research Keyword';
+}
+
+function showKrErr(msg) { const el = document.getElementById('krErrBox'); el.textContent = msg; el.classList.add('visible'); }
+function setKrKeyword(el) { document.getElementById('krInput').value = el.dataset.kw; runKeywords(); }
+document.getElementById('krInput').addEventListener('keydown', e => { if(e.key==='Enter') runKeywords(); });
+
+
+async function runBacklinks() {
+  const url = document.getElementById('blInput').value.trim();
+  if (!url) { showBlErr('Please enter a URL or domain.'); return; }
+  setBlUI('loading');
+  try {
+    const res = await fetch('/api/backlinks?url=' + encodeURIComponent(url));
+    const data = await res.json();
+    if (!res.ok || data.error) throw new Error(data.error || 'Check failed');
+    renderBacklinks(data);
+  } catch(e) { setBlUI('idle'); showBlErr('❌ ' + e.message); }
+}
+
+function renderBacklinks(d) {
+  setBlUI('results');
+  const score = Math.round(d.pageRank * 10);
+  const color = score >= 70 ? '#27ae60' : score >= 40 ? '#f0a500' : '#e74c3c';
+  const stars = score >= 70 ? '⭐⭐⭐⭐⭐' : score >= 50 ? '⭐⭐⭐⭐' : score >= 30 ? '⭐⭐⭐' : score >= 15 ? '⭐⭐' : '⭐';
+  const label = score >= 70 ? 'Excellent Authority' : score >= 50 ? 'Good Authority' : score >= 30 ? 'Average Authority' : score >= 15 ? 'Low Authority' : 'Very Low Authority';
+  const circumference = 345;
+  const offset = circumference - (score / 100) * circumference;
+
+  document.getElementById('blResults').innerHTML =
+    '<div class="bl-card">' +
+      '<div class="bl-domain">' + d.domain + '</div>' +
+      '<div class="bl-score-wrap">' +
+        '<div class="bl-ring-wrap">' +
+          '<svg viewBox="0 0 130 130"><circle class="bl-ring-bg" cx="65" cy="65" r="55"/><circle class="bl-ring-fill" cx="65" cy="65" r="55" id="blRingFill" style="stroke:' + color + ';stroke-dashoffset:' + offset + '"/></svg>' +
+          '<div class="bl-score-num">' + d.pageRankInt + '<div class="bl-score-sub">/ 10</div></div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="bl-stars">' + stars + '</div>' +
+      '<div style="text-align:center;font-size:14px;font-weight:600;color:' + color + ';margin-bottom:16px;">' + label + '</div>' +
+      '<div class="bl-metrics">' +
+        '<div class="bl-metric"><div class="val">' + d.pageRankInt + '/10</div><div class="lbl">Page Rank</div></div>' +
+        '<div class="bl-metric"><div class="val">' + (d.rank !== 'N/A' ? '#' + parseInt(d.rank).toLocaleString() : 'N/A') + '</div><div class="lbl">Global Rank</div></div>' +
+        '<div class="bl-metric"><div class="val">' + d.pageRank.toFixed(2) + '</div><div class="lbl">OPR Score</div></div>' +
+      '</div>' +
+      '<div class="bl-note">📌 Open Page Rank is a free, transparent metric based on the quality and quantity of backlinks pointing to this domain. Scores range from 0–10, similar to the old Google PageRank.</div>' +
+    '</div>';
+}
+
+function setBlUI(state) {
+  document.getElementById('blEmptyState').style.display = state==='idle' ? 'block' : 'none';
+  document.getElementById('blLoadingState').classList.toggle('visible', state==='loading');
+  document.getElementById('blResults').style.display = state==='results' ? 'block' : 'none';
+  document.getElementById('blErrBox').classList.remove('visible');
+  const btn = document.getElementById('blBtn');
+  btn.disabled = state==='loading';
+  btn.textContent = state==='loading' ? 'Checking...' : 'Check Backlinks';
+}
+
+function showBlErr(msg) { const el = document.getElementById('blErrBox'); el.textContent = msg; el.classList.add('visible'); }
+document.getElementById('blInput').addEventListener('keydown', e => { if(e.key==='Enter') runBacklinks(); });
 
 </script>
 </body>

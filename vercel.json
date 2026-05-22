@@ -1,17 +1,15 @@
 {
   "version": 2,
   "functions": {
-    "api/analyze.js": {
-      "memory": 1024,
-      "maxDuration": 30
-    },
-    "api/keyword.js": {
-      "memory": 512,
-      "maxDuration": 15
-    }
+    "api/analyze.js": { "memory": 1024, "maxDuration": 30 },
+    "api/keyword.js": { "memory": 512, "maxDuration": 15 },
+    "api/keywords.js": { "memory": 512, "maxDuration": 15 },
+    "api/compare.js": { "memory": 1024, "maxDuration": 30 },
+    "api/backlinks.js": { "memory": 512, "maxDuration": 15 }
   },
   "routes": [
     { "src": "/api/(.*)", "dest": "/api/$1" },
+    { "src": "/", "dest": "/public/landing.html" },
     { "src": "/(.*)", "dest": "/public/$1" }
   ]
 }
