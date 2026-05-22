@@ -22,6 +22,7 @@ input:focus{border-color:var(--red);}
 input::placeholder{color:var(--dim);}
 .btn-submit{width:100%;background:var(--red);color:#fff;padding:13px;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;border:none;font-family:'Inter',sans-serif;transition:all .2s;box-shadow:0 0 24px var(--red-glow);margin-top:8px;}
 .btn-submit:hover{transform:translateY(-1px);box-shadow:0 0 40px var(--red-glow);}
+.btn-submit:disabled{opacity:0.6;cursor:not-allowed;transform:none;}
 .divider{display:flex;align-items:center;gap:12px;margin:20px 0;}
 .divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border);}
 .divider span{font-size:12px;color:var(--dim);}
@@ -29,54 +30,44 @@ input::placeholder{color:var(--dim);}
 .skip:hover{color:var(--off-white);}
 .signup-link{text-align:center;font-size:14px;color:var(--mid);margin-top:24px;}
 .signup-link a{color:var(--red);font-weight:600;text-decoration:none;}
-.err{background:rgba(230,57,70,0.1);border:1px solid rgba(230,57,70,0.3);border-radius:8px;padding:10px 14px;font-size:13px;color:#ff8c94;margin-bottom:16px;display:none;}
-.err.visible{display:block;}
+.msg{border-radius:8px;padding:10px 14px;font-size:13px;margin-bottom:16px;display:none;}
+.msg.visible{display:block;}
+.msg.err{background:rgba(230,57,70,0.1);border:1px solid rgba(230,57,70,0.3);color:#ff8c94;}
 </style>
 </head>
 <body>
 <div class="glow"></div>
 <div class="card">
-  <a href="landing.html" class="logo">🚀 SEO<span class="r">rocket</span></a>
+  <a href="index.html" class="logo">🚀 SEO<span class="r">rocket</span></a>
   <h1>Welcome back</h1>
   <p class="sub">Log in to your SEOrocket account.</p>
-  <div class="err" id="errBox"></div>
-  <div class="field">
-    <label>Email address</label>
-    <input type="email" id="email" placeholder="you@example.com" autocomplete="email"/>
-  </div>
-  <div class="field">
-    <label>Password</label>
-    <input type="password" id="password" placeholder="Your password"/>
-  </div>
+  <div class="msg err" id="errBox"></div>
+  <div class="field"><label>Email address</label><input type="email" id="email" placeholder="you@example.com" autocomplete="email"/></div>
+  <div class="field"><label>Password</label><input type="password" id="password" placeholder="Your password"/></div>
   <button class="btn-submit" id="submitBtn" onclick="handleLogin()">Log in →</button>
   <div class="divider"><span>or</span></div>
-  <a href="index.html" class="skip">Continue without account →</a>
+  <a href="app.html" class="skip">Continue without account →</a>
   <p class="signup-link">Don't have an account? <a href="signup.html">Sign up free</a></p>
 </div>
 <script>
-const SUPABASE_URL = '';
-const SUPABASE_ANON_KEY = '';
-
+const SUPABASE_URL = 'https://jjfojqvhcecyxmstpmxl.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_631aiLjc7Kyv1bSNeNSYDg_xbuMdDCD';
 async function handleLogin(){
-  const email = document.getElementById('email').value.trim();
-  const pass = document.getElementById('password').value;
-  const err = document.getElementById('errBox');
-  const btn = document.getElementById('submitBtn');
+  const email=document.getElementById('email').value.trim();
+  const pass=document.getElementById('password').value;
+  const err=document.getElementById('errBox');
+  const btn=document.getElementById('submitBtn');
   err.classList.remove('visible');
   if(!email||!pass){err.textContent='Please fill in all fields.';err.classList.add('visible');return;}
   btn.textContent='Logging in...';btn.disabled=true;
-  if(SUPABASE_URL && SUPABASE_ANON_KEY){
-    try{
-      const res = await fetch(SUPABASE_URL+'/auth/v1/token?grant_type=password',{method:'POST',headers:{'Content-Type':'application/json','apikey':SUPABASE_ANON_KEY},body:JSON.stringify({email,password:pass})});
-      const data = await res.json();
-      if(data.error){err.textContent=data.error.message||'Login failed.';err.classList.add('visible');btn.textContent='Log in →';btn.disabled=false;return;}
-      localStorage.setItem('seorocket_token', data.access_token);
-      localStorage.setItem('seorocket_user', JSON.stringify(data.user));
-      window.location.href='index.html';
-    }catch(e){err.textContent='Could not connect. Try again.';err.classList.add('visible');btn.textContent='Log in →';btn.disabled=false;}
-  } else {
-    window.location.href='index.html';
-  }
+  try{
+    const res=await fetch(SUPABASE_URL+'/auth/v1/token?grant_type=password',{method:'POST',headers:{'Content-Type':'application/json','apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SUPABASE_ANON_KEY},body:JSON.stringify({email,password:pass})});
+    const data=await res.json();
+    if(data.error||data.error_description){err.textContent=data.error_description||data.error?.message||'Login failed.';err.classList.add('visible');btn.textContent='Log in →';btn.disabled=false;return;}
+    localStorage.setItem('seorocket_token',data.access_token);
+    localStorage.setItem('seorocket_user',JSON.stringify(data.user));
+    window.location.href='app.html';
+  }catch(e){err.textContent='Could not connect. Please try again.';err.classList.add('visible');btn.textContent='Log in →';btn.disabled=false;}
 }
 document.addEventListener('keydown',e=>{if(e.key==='Enter')handleLogin();});
 </script>
