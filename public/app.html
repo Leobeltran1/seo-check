@@ -370,7 +370,7 @@ async function saveKw(keyword,results){
   const token=getToken();const nav=document.getElementById("topbarRight");
   if(token){
     const u=getUser();const e=u?.email||"";const i=e?e[0].toUpperCase():"?";
-    nav.innerHTML="<button class=\"user-btn\" onclick=\"toggleUD()\">"+i+"</button><div class=\"user-dropdown\" id=\"userDD\"><div class=\"ud-email\">"+e+"</div><a href=\"dashboard.html\" class=\"ud-item\">📊 Dashboard</a><a href=\"index.html\" class=\"ud-item\">🏠 Home</a><div class=\"ud-item danger\" onclick=\"logout()\">Log out</div></div>";
+    nav.innerHTML="<a href=\"dashboard.html\" style=\"color:var(--mid);font-size:13px;font-weight:500;text-decoration:none;padding:6px 14px;border:1px solid var(--border);border-radius:8px;transition:all .2s;\" onmouseover=\"this.style.borderColor='var(--red)';\" onmouseout=\"this.style.borderColor='var(--border)';\" >📊 Dashboard</a><button class=\"user-btn\" onclick=\"toggleUD()\">"+i+"</button><div class=\"user-dropdown\" id=\"userDD\"><div class=\"ud-email\">"+e+"</div><a href=\"dashboard.html\" class=\"ud-item\">📊 Dashboard</a><a href=\"index.html\" class=\"ud-item\">🏠 Home</a><div class=\"ud-item danger\" onclick=\"logout()\">Log out</div></div>";
   }else{
     nav.innerHTML="<a href=\"login.html\" class=\"topbar-login\">Log in</a><a href=\"signup.html\" class=\"topbar-signup\">Sign up</a>";
   }
