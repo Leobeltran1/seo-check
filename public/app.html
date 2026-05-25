@@ -362,7 +362,10 @@ const SUPA_KEY="sb_publishable_631aiLjc7Kyv1bSNeNSYDg_xbuMdDCD";
 function getToken(){return localStorage.getItem("seorocket_token");}
 function getUser(){try{return JSON.parse(localStorage.getItem("seorocket_user"));}catch(e){return null;}}
 async function saveAudit(url,overall,scores){const token=getToken();const user=getUser();if(!token||!user)return;try{await fetch(SUPA_URL+"/rest/v1/audits",{method:"POST",headers:{"Content-Type":"application/json","apikey":SUPA_KEY,"Authorization":"Bearer "+token,"Prefer":"return=minimal"},body:JSON.stringify({user_id:user.id,url,overall_score:overall,scores})});}catch(e){}}
-async function saveKw(keyword,results){const token=getToken();const user=getUser();if(!token||!user)return;try{await fetch(SUPA_URL+"/rest/v1/keyword_searches",{method:"POST",headers:{"Content-Type":"application/json","apikey":SUPA_KEY,"Authorization":"Bearer "+token,"Prefer":"return=minimal"},body:JSON.stringify({user_id:user.id,keyword,results}));}catch(e){}}
+async function saveKw(keyword,results){
+  const token=getToken();const user=getUser();if(!token||!user)return;
+  try{await fetch(SUPA_URL+'/rest/v1/keyword_searches',{method:'POST',headers:{'Content-Type':'application/json','apikey':SUPA_KEY,'Authorization':'Bearer '+token,'Prefer':'return=minimal'},body:JSON.stringify({user_id:user.id,keyword:keyword,results:results})});}catch(e){}
+}
 (function(){
   const token=getToken();const nav=document.getElementById("topbarRight");
   if(token){
