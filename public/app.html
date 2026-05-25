@@ -17,7 +17,7 @@
   --shadow:0 4px 24px rgba(0,0,0,0.4);
   --blue:#3b82f6;--blue-light:rgba(59,130,246,0.1);
 }
-html,body{height:100%;overflow:hidden;}
+html{height:100%;}body{height:100%;overflow-y:auto;}
 body{font-family:"Inter",sans-serif;background:var(--bg);color:var(--off-white);display:flex;flex-direction:column;}
 .topbar{height:56px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;flex-shrink:0;z-index:50;}
 .topbar-logo{font-size:17px;font-weight:900;display:flex;align-items:center;gap:8px;text-decoration:none;color:var(--off-white);}
@@ -34,12 +34,12 @@ body{font-family:"Inter",sans-serif;background:var(--bg);color:var(--off-white);
 .topbar-login{color:var(--mid);font-size:13px;font-weight:500;text-decoration:none;padding:6px 14px;border:1px solid var(--border);border-radius:8px;transition:all .2s;}
 .topbar-login:hover{border-color:var(--red);color:var(--off-white);}
 .topbar-signup{color:#fff;font-size:13px;font-weight:600;text-decoration:none;padding:6px 14px;background:var(--red);border-radius:8px;}
-.tabnav{height:48px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:stretch;padding:0 16px;gap:2px;flex-shrink:0;overflow-x:auto;scrollbar-width:none;}
+.tabnav{height:48px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:stretch;padding:0 16px;gap:2px;flex-shrink:0;overflow-x:auto;scrollbar-width:none;position:sticky;top:56px;z-index:40;}
 .tabnav::-webkit-scrollbar{display:none;}
 .tab{display:flex;align-items:center;gap:7px;padding:0 16px;font-size:13px;font-weight:500;color:var(--mid);cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;white-space:nowrap;flex-shrink:0;background:none;border-top:none;border-left:none;border-right:none;font-family:"Inter",sans-serif;}
 .tab:hover{color:var(--off-white);}
 .tab.active{color:var(--off-white);border-bottom-color:var(--red);}
-.main{flex:1;overflow-y:auto;overflow-x:hidden;}
+.main{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;}
 .view{display:none;min-height:100%;}
 .view.active{display:block;}
 .tool-hero{padding:32px 32px 24px;background:linear-gradient(180deg,var(--bg2) 0%,var(--bg) 100%);border-bottom:1px solid var(--border);}
@@ -365,8 +365,12 @@ async function saveAudit(url,overall,scores){const token=getToken();const user=g
 async function saveKw(keyword,results){const token=getToken();const user=getUser();if(!token||!user)return;try{await fetch(SUPA_URL+"/rest/v1/keyword_searches",{method:"POST",headers:{"Content-Type":"application/json","apikey":SUPA_KEY,"Authorization":"Bearer "+token,"Prefer":"return=minimal"},body:JSON.stringify({user_id:user.id,keyword,results}));}catch(e){}}
 (function(){
   const token=getToken();const nav=document.getElementById("topbarRight");
-  if(token){const u=getUser();const e=u?.email||"";const i=e?e[0].toUpperCase():"?";nav.innerHTML="<button class=\"user-btn\" onclick=\"toggleUD()\">"+i+"</button><div class=\"user-dropdown\" id=\"userDD\"><div class=\"ud-email\">"+e+"</div><a href=\"dashboard.html\" class=\"ud-item\">Dashboard</a><div class=\"ud-item danger\" onclick=\"logout()\">Log out</div></div>";}
-  else{nav.innerHTML="<a href=\"login.html\" class=\"topbar-login\">Log in</a><a href=\"signup.html\" class=\"topbar-signup\">Sign up</a>";}
+  if(token){
+    const u=getUser();const e=u?.email||"";const i=e?e[0].toUpperCase():"?";
+    nav.innerHTML="<button class=\"user-btn\" onclick=\"toggleUD()\">"+i+"</button><div class=\"user-dropdown\" id=\"userDD\"><div class=\"ud-email\">"+e+"</div><a href=\"dashboard.html\" class=\"ud-item\">📊 Dashboard</a><a href=\"index.html\" class=\"ud-item\">🏠 Home</a><div class=\"ud-item danger\" onclick=\"logout()\">Log out</div></div>";
+  }else{
+    nav.innerHTML="<a href=\"login.html\" class=\"topbar-login\">Log in</a><a href=\"signup.html\" class=\"topbar-signup\">Sign up</a>";
+  }
 })();
 function toggleUD(){document.getElementById("userDD")?.classList.toggle("open");}
 function logout(){localStorage.removeItem("seorocket_token");localStorage.removeItem("seorocket_user");window.location.href="index.html";}
