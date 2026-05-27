@@ -14,12 +14,32 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
-:root{--bg:#0B0E1A;--bg2:#0E1120;--card:#0E1120;--red:#C0F040;--red-glow:rgba(192,240,64,0.25);--off-white:#F4F6FB;--mid:#94a3b8;--dim:#64748b;--border:rgba(255,255,255,0.07);--green:#10b981;--yellow:#f59e0b;}
+:root{
+  --bg:#0B0E1A;
+  --bg2:#0E1120;
+  --card:#0E1120;
+  --red:#C0F040;
+  --red-glow:rgba(192,240,64,0.25);
+  --red-light:rgba(192,240,64,0.1);
+  --green:#10b981;
+  --green-light:rgba(16,185,129,0.1);
+  --yellow:#f59e0b;
+  --yellow-light:rgba(245,158,11,0.1);
+  --off-white:#F4F6FB;
+  --mid:#94a3b8;
+  --dim:#64748b;
+  --border:rgba(255,255,255,0.08);
+  --border2:rgba(255,255,255,0.12);
+  --shadow:0 4px 24px rgba(0,0,0,0.4);
+  --blue:#3b82f6;
+  --blue-light:rgba(59,130,246,0.1);
+  --text:#F4F6FB;
+}
 body{font-family:"Inter",sans-serif;background:#0B0E1A;color:#F4F6FB;min-height:100vh;font-size:18px;}
 a{text-decoration:none;color:inherit;}
 nav{position:sticky;top:0;z-index:100;padding:0 80px;height:80px;display:flex;align-items:center;justify-content:space-between;background:rgba(10,10,15,0.9);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);}
 .nav-logo{font-size:26px;font-weight:900;}
-.nav-logo .r{color:#F4F6FB;}
+.nav-logo .r{color:#C0F040;}
 .nav-right{display:flex;align-items:center;gap:16px;}
 .nav-btn{background:none;border:1px solid var(--border);color:var(--mid);padding:12px 28px;border-radius:10px;font-size:16px;font-weight:500;cursor:pointer;transition:all .2s;font-family:"Inter",sans-serif;}
 .nav-btn:hover{border-color:var(--red);color:var(--off-white);}
@@ -38,7 +58,7 @@ nav{position:sticky;top:0;z-index:100;padding:0 80px;height:80px;display:flex;al
 .section{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:32px;margin-bottom:28px;}
 .section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;}
 .section-title{font-size:22px;font-weight:700;}
-.section-action{font-size:16px;color:var(--red);cursor:pointer;font-weight:500;}
+.section-action{font-size:16px;color:#C0F040;cursor:pointer;font-weight:500;}
 .audit-item{display:flex;align-items:center;gap:18px;padding:18px 0;border-bottom:1px solid var(--border);}
 .audit-item:last-child{border-bottom:none;padding-bottom:0;}
 .audit-score{width:64px;height:64px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:800;flex-shrink:0;}
@@ -61,7 +81,7 @@ nav{position:sticky;top:0;z-index:100;padding:0 80px;height:80px;display:flex;al
 .action-btn .name{font-size:16px;font-weight:600;color:var(--mid);}
 .account-section{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:32px;}
 .account-avatar{width:90px;height:90px;border-radius:50%;background:var(--red);color:#0B0E1A;display:flex;align-items:center;justify-content:center;font-size:36px;font-weight:800;margin:0 auto 20px;}
-.account-email{text-align:center;font-size:19px;font-weight:600;margin-bottom:6px;}
+.account-email{text-align:center;font-size:19px;font-weight:600;margin-bottom:6px;color:#F4F6FB;}
 .account-since{text-align:center;font-size:16px;color:var(--dim);margin-bottom:24px;}
 .account-divider{height:1px;background:var(--border);margin:16px 0;}
 .logout-btn{width:100%;background:rgba(192,240,64,0.1);border:1px solid rgba(192,240,64,0.2);color:var(--red);padding:16px;border-radius:12px;font-size:17px;font-weight:600;cursor:pointer;font-family:"Inter",sans-serif;transition:all .2s;}
