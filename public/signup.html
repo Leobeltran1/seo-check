@@ -6,11 +6,11 @@
   <meta name="theme-color" content="#C0F040">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="SEOrocket">
+  <meta name="apple-mobile-web-app-title" content="SEORocket">
   <link rel="apple-touch-icon" href="/icons/icon-192.png">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sign Up — SEOrocket</title>
+<title>Sign Up — SEORocket</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
@@ -46,7 +46,7 @@ input::placeholder{color:var(--dim);}
 <body>
 <div class="glow"></div>
 <div class="card">
-  <a href="index.html" class="logo">🚀 SEO<span class="r">rocket</span></a>
+  <a href="index.html" class="logo">🚀 SEO<span class="r">Rocket</span></a>
   <h1>Create your account</h1>
   <p class="sub">Free forever. No credit card needed.</p>
   <div class="msg err" id="errBox"></div>
@@ -78,7 +78,7 @@ async function handleSignup(){
     const res=await fetch(SUPABASE_URL+'/auth/v1/signup',{method:'POST',headers:{'Content-Type':'application/json','apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SUPABASE_ANON_KEY},body:JSON.stringify({email,password:pass})});
     const data=await res.json();
     if(data.error||data.msg){err.textContent=data.error?.message||data.msg||'Signup failed.';err.classList.add('visible');btn.textContent='Create free account →';btn.disabled=false;return;}
-    if(data.access_token){localStorage.setItem('seorocket_token',data.access_token);localStorage.setItem('seorocket_user',JSON.stringify(data.user));window.location.href='dashboard.html';return;}
+    if(data.access_token){localStorage.setItem('SEORocket_token',data.access_token);localStorage.setItem('SEORocket_user',JSON.stringify(data.user));window.location.href='dashboard.html';return;}
     ok.textContent='Account created! Check your email to confirm then log in.';ok.classList.add('visible');
     btn.textContent='Create free account →';btn.disabled=false;
   }catch(e){err.textContent='Could not connect. Please try again.';err.classList.add('visible');btn.textContent='Create free account →';btn.disabled=false;}
