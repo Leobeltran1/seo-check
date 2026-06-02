@@ -38,7 +38,7 @@
 html{scroll-behavior:smooth;}
 body{font-family:'Inter',sans-serif;background:#0B0E1A;color:#F4F6FB;overflow-x:hidden;}
 a{text-decoration:none;color:inherit;}
-nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:0 80px;height:80px;display:flex;align-items:center;justify-content:space-between;backdrop-filter:blur(20px);background:rgba(10,10,15,0.85);border-bottom:1px solid var(--border);}
+nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:0 80px;height:80px;display:flex;align-items:center;justify-content:space-between;backdrop-filter:blur(20px);background:rgba(11,14,26,0.95);border-bottom:1px solid var(--border);}
 .logo{display:flex;align-items:center;gap:10px;font-size:26px;font-weight:900;}
 .logo .r{color:#F4F6FB;}
 .nav-links{display:flex;gap:40px;}
@@ -97,8 +97,7 @@ footer{background:var(--bg2);border-top:1px solid var(--border);padding:40px;tex
 .footer-logo{font-size:24px;font-weight:900;margin-bottom:16px;}
 .footer-logo .r{color:#F4F6FB;}
 footer p{font-size:16px;color:var(--dim);}
-@media(max-width:768px){
-  nav{padding:0 20px;height:64px;}
+
   .nav-links{display:none;}
   .nav-btns{gap:8px;}
   .btn-ghost{padding:8px 14px;font-size:14px;}
@@ -125,21 +124,68 @@ footer p{font-size:16px;color:var(--dim);}
   .cta-box h2{font-size:clamp(26px,6vw,36px);}
   footer{padding:32px 20px;}
 }
-@media(max-width:400px){
-  h1{font-size:32px;}
+
   .btn-hero{font-size:15px;padding:12px 20px;}
 }
 
-.hamburger{display:none;flex-direction:column;justify-content:center;gap:5px;background:none;border:none;cursor:pointer;padding:8px;z-index:200;flex-shrink:0;}
+
 .hamburger span{display:block;width:24px;height:2px;background:#F4F6FB;border-radius:2px;transition:all .3s;}
+
+
+
+
+
+
+.mobile-menu a:last-child{border-bottom:none;}
+
+
+/* HAMBURGER - desktop hidden */
+.hamburger{display:none;flex-direction:column;justify-content:center;gap:5px;background:none;border:none;cursor:pointer;padding:6px;z-index:300;flex-shrink:0;}
+.hamburger span{display:block;width:22px;height:2px;background:#F4F6FB;border-radius:2px;transition:all .3s;}
 .hamburger.open span:nth-child(1){transform:rotate(45deg) translate(5px,5px);}
 .hamburger.open span:nth-child(2){opacity:0;}
 .hamburger.open span:nth-child(3){transform:rotate(-45deg) translate(5px,-5px);}
-.mobile-menu{display:none;position:fixed;top:64px;left:0;right:0;background:#0E1120;border-bottom:1px solid rgba(255,255,255,0.08);padding:20px;flex-direction:column;gap:0;z-index:150;}
+
+/* MOBILE DROPDOWN MENU */
+.mobile-menu{display:none;position:fixed;top:60px;left:0;right:0;background:#0E1120;border-bottom:1px solid rgba(255,255,255,0.08);padding:16px 20px;flex-direction:column;z-index:200;}
 .mobile-menu.open{display:flex;}
-.mobile-menu a{color:#F4F6FB;font-size:17px;font-weight:500;text-decoration:none;padding:14px 0;border-bottom:1px solid rgba(255,255,255,0.06);}
+.mobile-menu a{color:#F4F6FB;font-size:16px;font-weight:500;text-decoration:none;padding:14px 0;border-bottom:1px solid rgba(255,255,255,0.06);}
 .mobile-menu a:last-child{border-bottom:none;}
-.mobile-signup{background:#C0F040;color:#0B0E1A !important;font-weight:700 !important;border-radius:10px;padding:14px 20px !important;text-align:center;margin-top:8px;border-bottom:none !important;}
+.mobile-signup-btn{background:#C0F040 !important;color:#0B0E1A !important;font-weight:700 !important;border-radius:10px;padding:14px 20px !important;text-align:center;margin-top:8px;border-bottom:none !important;}
+
+/* MOBILE BREAKPOINT */
+@media(max-width:768px){
+  nav{padding:0 20px;height:60px;}
+  .nav-links{display:none !important;}
+  .nav-btns{display:none !important;}
+  .hamburger{display:flex !important;}
+  .logo{font-size:18px;}
+  .hero{min-height:100vh;padding:90px 20px 60px;}
+  h1{font-size:clamp(32px,9vw,54px);letter-spacing:-1px;}
+  .hero-sub{font-size:16px;max-width:100%;}
+  .btn-hero{padding:14px 24px;font-size:16px;width:100%;justify-content:center;}
+  .btn-hero-ghost{padding:14px 24px;font-size:16px;width:100%;justify-content:center;}
+  .hero-actions{flex-direction:column;gap:12px;}
+  .stats{gap:24px;padding:40px 16px;flex-wrap:wrap;}
+  .stat .val{font-size:36px;}
+  .stat .lbl{font-size:13px;}
+  .section{padding:60px 20px;max-width:100%;}
+  .tools-grid{grid-template-columns:1fr;gap:14px;}
+  .tool-card{padding:24px;}
+  .sec-title{font-size:clamp(26px,6vw,36px);}
+  .why-section{padding:60px 20px;}
+  .why-inner{max-width:100%;}
+  .why-grid{grid-template-columns:1fr;gap:24px;}
+  .cta-section{padding:60px 20px;}
+  .cta-box{padding:32px 20px;max-width:100%;}
+  .cta-box h2{font-size:clamp(24px,6vw,32px);}
+  footer{padding:32px 20px;}
+}
+@media(max-width:400px){
+  h1{font-size:30px;}
+  .btn-hero,.btn-hero-ghost{font-size:15px;padding:12px 16px;}
+}
+
 </style>
 </head>
 <body>
@@ -154,16 +200,17 @@ footer p{font-size:16px;color:var(--dim);}
     <a href="login.html" class="btn-ghost">Log in</a>
     <a href="signup.html" class="btn-red">Sign up free</a>
   </div>
+  </div>
   <button class="hamburger" id="hamburger" onclick="toggleMenu()">
     <span></span><span></span><span></span>
   </button>
-  <div class="mobile-menu" id="mobileMenu">
-    <a href="#tools" onclick="toggleMenu()">Tools</a>
-    <a href="#why" onclick="toggleMenu()">Why Free</a>
-    <a href="app.html" onclick="toggleMenu()">Launch App</a>
-    <a href="login.html">Log in</a>
-    <a href="signup.html" class="mobile-signup">Sign up free</a>
-  </div>
+</div>
+<div class="mobile-menu" id="mobileMenu">
+  <a href="#tools" onclick="toggleMenu()">Tools</a>
+  <a href="#why" onclick="toggleMenu()">Why Free</a>
+  <a href="app.html" onclick="toggleMenu()">Launch App</a>
+  <a href="login.html">Log in</a>
+  <a href="signup.html" class="mobile-signup-btn">Sign up free</a>
 </div>
 </nav>
 <div class="hero">
@@ -246,6 +293,7 @@ if(localStorage.getItem('SEORocket_token')){
       });
     }
   </script>
+
 <script>
 function toggleMenu(){
   document.getElementById("mobileMenu").classList.toggle("open");
