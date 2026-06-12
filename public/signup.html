@@ -92,9 +92,8 @@ input::placeholder{color:var(--dim);}
   <a href="app.html" class="skip">Continue without account →</a>
   <p class="login-link">Already have an account? <a href="login.html">Log in</a></p>
 </div>
+<script src="/auth.js"></script>
 <script>
-const SUPABASE_URL = 'https://jjfojqvhcecyxmstpmxl.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable_631aiLjc7Kyv1bSNeNSYDg_xbuMdDCD';
 async function handleSignup(){
   const email=document.getElementById('email').value.trim();
   const pass=document.getElementById('password').value;
@@ -108,10 +107,10 @@ async function handleSignup(){
   if(pass!==confirm){err.textContent='Passwords do not match.';err.classList.add('visible');return;}
   btn.textContent='Creating account...';btn.disabled=true;
   try{
-    const res=await fetch(SUPABASE_URL+'/auth/v1/signup',{method:'POST',headers:{'Content-Type':'application/json','apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SUPABASE_ANON_KEY},body:JSON.stringify({email,password:pass})});
+    const res=await fetch(SEOR_URL+'/auth/v1/signup',{method:'POST',headers:{'Content-Type':'application/json','apikey':SEOR_KEY},body:JSON.stringify({email,password:pass})});
     const data=await res.json();
-    if(data.error||data.msg){err.textContent=data.error?.message||data.msg||'Signup failed.';err.classList.add('visible');btn.textContent='Create free account →';btn.disabled=false;return;}
-    if(data.access_token){localStorage.setItem('SEORocket_token',data.access_token);localStorage.setItem('SEORocket_user',JSON.stringify(data.user));window.location.href='dashboard.html';return;}
+    if(!res.ok||data.error||data.msg){err.textContent=data.error?.message||data.msg||'Signup failed.';err.classList.add('visible');btn.textContent='Create free account →';btn.disabled=false;return;}
+    if(data.access_token){seorSaveSession(data);window.location.href='dashboard.html';return;}
     ok.textContent='Account created! Check your email to confirm then log in.';ok.classList.add('visible');
     btn.textContent='Create free account →';btn.disabled=false;
   }catch(e){err.textContent='Could not connect. Please try again.';err.classList.add('visible');btn.textContent='Create free account →';btn.disabled=false;}

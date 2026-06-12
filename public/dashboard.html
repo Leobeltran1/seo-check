@@ -222,16 +222,12 @@ nav{position:sticky;top:0;z-index:100;padding:0 80px;height:80px;display:flex;al
   </div>
 </div>
 
+<script src="/auth.js"></script>
 <script>
-const SUPA_URL = 'https://jjfojqvhcecyxmstpmxl.supabase.co';
-const SUPA_KEY = 'sb_publishable_631aiLjc7Kyv1bSNeNSYDg_xbuMdDCD';
-
 // Auth check
-const token = localStorage.getItem('SEORocket_token');
-const userStr = localStorage.getItem('SEORocket_user');
-if(!token || !userStr){ window.location.href = 'login.html'; }
+if(!seorLoggedIn()){ window.location.href = 'login.html'; }
 
-const user = JSON.parse(userStr || '{}');
+const user = seorGetUser() || {};
 const email = user.email || '';
 const initial = email ? email[0].toUpperCase() : '?';
 const createdAt = user.created_at ? new Date(user.created_at) : new Date();
@@ -247,13 +243,7 @@ document.getElementById('memberDays').textContent = daysSince;
 
 async function loadAudits(){
   try{
-    const res = await fetch(SUPA_URL+'/rest/v1/audits?select=*&user_id=eq.'+user.id+'&order=created_at.desc&limit=10',{
-      headers:{
-        'apikey':SUPA_KEY,
-        'Authorization':'Bearer '+token,
-        'Content-Type':'application/json'
-      }
-    });
+    const res = await seorRest('audits?select=*&user_id=eq.'+user.id+'&order=created_at.desc&limit=10');
     if(!res.ok){
       const err = await res.text();
       console.error('Audits fetch error:', res.status, err);
@@ -277,6 +267,7 @@ async function loadAudits(){
       return '<div class="audit-item"><div class="audit-score '+cls+'">'+score+'%</div><div class="audit-info"><div class="audit-url">'+domain+'</div><div class="audit-date">'+date+'</div></div><span class="audit-arrow">→</span></div>';
     }).join('');
   }catch(e){
+    if(e.message === 'not-authenticated'){ window.location.href = 'login.html'; return; }
     console.error('loadAudits exception:', e);
     document.getElementById('auditsList').innerHTML = '<div class="empty"><p>Could not load audits.</p></div>';
   }
@@ -284,13 +275,7 @@ async function loadAudits(){
 
 async function loadKeywords(){
   try{
-    const res = await fetch(SUPA_URL+'/rest/v1/keyword_searches?select=*&user_id=eq.'+user.id+'&order=created_at.desc&limit=10',{
-      headers:{
-        'apikey':SUPA_KEY,
-        'Authorization':'Bearer '+token,
-        'Content-Type':'application/json'
-      }
-    });
+    const res = await seorRest('keyword_searches?select=*&user_id=eq.'+user.id+'&order=created_at.desc&limit=10');
     if(!res.ok){
       const err = await res.text();
       console.error('Keywords fetch error:', res.status, err);
@@ -309,14 +294,14 @@ async function loadKeywords(){
       return '<div class="kw-item"><div><div class="kw-text">'+k.keyword+'</div><div class="kw-date">'+date+'</div></div><span class="kw-badge">searched</span></div>';
     }).join('');
   }catch(e){
+    if(e.message === 'not-authenticated'){ window.location.href = 'login.html'; return; }
     console.error('loadKeywords exception:', e);
     document.getElementById('keywordsList').innerHTML = '<div class="empty"><p>Could not load searches.</p></div>';
   }
 }
 
 function logout(){
-  localStorage.removeItem('SEORocket_token');
-  localStorage.removeItem('SEORocket_user');
+  seorClearSession();
   window.location.href = 'index.html';
 }
 

@@ -63,6 +63,9 @@ input::placeholder{color:var(--dim);}
 .msg{border-radius:8px;padding:10px 14px;font-size:13px;margin-bottom:16px;display:none;}
 .msg.visible{display:block;}
 .msg.err{background:rgba(192,240,64,0.1);border:1px solid rgba(192,240,64,0.3);color:#d4ff70;}
+.forgot-row{text-align:right;margin:-8px 0 16px;}
+.forgot{font-size:13px;color:var(--mid);text-decoration:none;transition:color .2s;}
+.forgot:hover{color:var(--red);}
 </style>
 
 <style>
@@ -84,14 +87,14 @@ input::placeholder{color:var(--dim);}
   <div class="msg err" id="errBox"></div>
   <div class="field"><label>Email address</label><input type="email" id="email" placeholder="you@example.com" autocomplete="email"/></div>
   <div class="field"><label>Password</label><input type="password" id="password" placeholder="Your password"/></div>
+  <div class="forgot-row"><a href="reset-password.html" class="forgot">Lost password?</a></div>
   <button class="btn-submit" id="submitBtn" onclick="handleLogin()">Log in →</button>
   <div class="divider"><span>or</span></div>
   <a href="app.html" class="skip">Continue without account →</a>
   <p class="signup-link">Don't have an account? <a href="signup.html">Sign up free</a></p>
 </div>
+<script src="/auth.js"></script>
 <script>
-const SUPABASE_URL = 'https://jjfojqvhcecyxmstpmxl.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable_631aiLjc7Kyv1bSNeNSYDg_xbuMdDCD';
 async function handleLogin(){
   const email=document.getElementById('email').value.trim();
   const pass=document.getElementById('password').value;
@@ -101,11 +104,10 @@ async function handleLogin(){
   if(!email||!pass){err.textContent='Please fill in all fields.';err.classList.add('visible');return;}
   btn.textContent='Logging in...';btn.disabled=true;
   try{
-    const res=await fetch(SUPABASE_URL+'/auth/v1/token?grant_type=password',{method:'POST',headers:{'Content-Type':'application/json','apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SUPABASE_ANON_KEY},body:JSON.stringify({email,password:pass})});
+    const res=await fetch(SEOR_URL+'/auth/v1/token?grant_type=password',{method:'POST',headers:{'Content-Type':'application/json','apikey':SEOR_KEY},body:JSON.stringify({email,password:pass})});
     const data=await res.json();
-    if(data.error||data.error_description){err.textContent=data.error_description||data.error?.message||'Login failed.';err.classList.add('visible');btn.textContent='Log in →';btn.disabled=false;return;}
-    localStorage.setItem('SEORocket_token',data.access_token);
-    localStorage.setItem('SEORocket_user',JSON.stringify(data.user));
+    if(!res.ok||!data.access_token){err.textContent=data.error_description||data.msg||data.error?.message||'Login failed.';err.classList.add('visible');btn.textContent='Log in →';btn.disabled=false;return;}
+    seorSaveSession(data);
     window.location.href='dashboard.html';
   }catch(e){err.textContent='Could not connect. Please try again.';err.classList.add('visible');btn.textContent='Log in →';btn.disabled=false;}
 }

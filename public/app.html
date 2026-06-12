@@ -401,27 +401,40 @@ body{font-family:"Inter",sans-serif;background:#0B0E1A;color:#F4F6FB;display:fle
   </div>
 </div>
 </div>
+<script src="/auth.js"></script>
 <script>
-const SUPA_URL="https://jjfojqvhcecyxmstpmxl.supabase.co";
-const SUPA_KEY="sb_publishable_631aiLjc7Kyv1bSNeNSYDg_xbuMdDCD";
-function getToken(){return localStorage.getItem("SEORocket_token");}
-function getUser(){try{return JSON.parse(localStorage.getItem("SEORocket_user"));}catch(e){return null;}}
-async function saveAudit(url,overall,scores){const token=getToken();const user=getUser();if(!token||!user)return;try{await fetch(SUPA_URL+"/rest/v1/audits",{method:"POST",headers:{"Content-Type":"application/json","apikey":SUPA_KEY,"Authorization":"Bearer "+token,"Prefer":"return=minimal"},body:JSON.stringify({user_id:user.id,url,overall_score:overall,scores})});}catch(e){}}
-async function saveKw(keyword,results){
-  const token=getToken();const user=getUser();if(!token||!user)return;
-  try{await fetch(SUPA_URL+'/rest/v1/keyword_searches',{method:'POST',headers:{'Content-Type':'application/json','apikey':SUPA_KEY,'Authorization':'Bearer '+token,'Prefer':'return=minimal'},body:JSON.stringify({user_id:user.id,keyword:keyword,results:results})});}catch(e){}
+function seorToast(msg){
+  let t=document.getElementById("seorToast");
+  if(!t){t=document.createElement("div");t.id="seorToast";t.style.cssText="position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1a1f33;color:#F4F6FB;border:1px solid rgba(192,240,64,0.4);border-radius:12px;padding:14px 22px;font-size:14px;z-index:1000;box-shadow:0 8px 32px rgba(0,0,0,0.5);max-width:90vw;text-align:center;";document.body.appendChild(t);}
+  t.textContent=msg;t.style.display="block";clearTimeout(t._hide);t._hide=setTimeout(()=>{t.style.display="none";},6000);
 }
+function saveFailMsg(e,what){return e.message==="not-authenticated"?"Your session expired — log in again to keep saving to your dashboard.":"Could not save this "+what+" to your dashboard.";}
+async function saveAudit(url,overall,scores){
+  if(!seorLoggedIn())return;
+  try{
+    const res=await seorRest("audits",{method:"POST",headers:{"Prefer":"return=minimal"},body:JSON.stringify({user_id:seorGetUser().id,url,overall_score:overall,scores})});
+    if(!res.ok)throw new Error("HTTP "+res.status);
+  }catch(e){seorToast(saveFailMsg(e,"audit"));}
+}
+async function saveKw(keyword,results){
+  if(!seorLoggedIn())return;
+  try{
+    const res=await seorRest("keyword_searches",{method:"POST",headers:{"Prefer":"return=minimal"},body:JSON.stringify({user_id:seorGetUser().id,keyword:keyword,results:results})});
+    if(!res.ok)throw new Error("HTTP "+res.status);
+  }catch(e){seorToast(saveFailMsg(e,"search"));}
+}
+if(seorLoggedIn())seorGetValidToken(); /* refresh a stale session as soon as the app opens */
 (function(){
-  const token=getToken();const nav=document.getElementById("topbarRight");
-  if(token){
-    const u=getUser();const e=u?.email||"";const i=e?e[0].toUpperCase():"?";
+  const nav=document.getElementById("topbarRight");
+  if(seorLoggedIn()){
+    const u=seorGetUser();const e=u?.email||"";const i=e?e[0].toUpperCase():"?";
     nav.innerHTML="<a href=\"dashboard.html\" style=\"color:var(--mid);font-size:13px;font-weight:500;text-decoration:none;padding:6px 14px;border:1px solid var(--border);border-radius:8px;transition:all .2s;\" onmouseover=\"this.style.borderColor='var(--red)';\" onmouseout=\"this.style.borderColor='var(--border)';\" >📊 Dashboard</a><button class=\"user-btn\" onclick=\"toggleUD()\">"+i+"</button><div class=\"user-dropdown\" id=\"userDD\"><div class=\"ud-email\">"+e+"</div><a href=\"dashboard.html\" class=\"ud-item\">📊 Dashboard</a><a href=\"index.html\" class=\"ud-item\">🏠 Home</a><div class=\"ud-item danger\" onclick=\"logout()\">Log out</div></div>";
   }else{
     nav.innerHTML="<a href=\"login.html\" class=\"topbar-login\">Log in</a><a href=\"signup.html\" class=\"topbar-signup\">Sign up</a>";
   }
 })();
 function toggleUD(){document.getElementById("userDD")?.classList.toggle("open");}
-function logout(){localStorage.removeItem("SEORocket_token");localStorage.removeItem("SEORocket_user");window.location.href="index.html";}
+function logout(){seorClearSession();window.location.href="index.html";}
 document.addEventListener("click",e=>{const dd=document.getElementById("userDD");if(dd&&!dd.contains(e.target)&&!e.target.closest(".user-btn"))dd.classList.remove("open");});
 function switchTab(t){document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));document.querySelectorAll(".tab").forEach(b=>b.classList.remove("active"));document.getElementById("view-"+t).classList.add("active");document.getElementById("tab-"+t).classList.add("active");document.getElementById("tab-"+t).scrollIntoView({behavior:"smooth",block:"nearest",inline:"center"});document.querySelector(".main").scrollTop=0;}
 async function run(){let url=document.getElementById("urlInput").value.trim();if(!url){showErr("errBox","Please enter a URL.");return;}if(!/^https?:\/\//i.test(url))url="https://"+url;document.getElementById("urlInput").value=url;setAUI("loading");animSteps();try{const res=await fetch("/api/analyze?url="+encodeURIComponent(url));const data=await res.json();if(!res.ok||data.error)throw new Error(data.error||"Analysis failed");renderAudit(data);saveAudit(data.url,data.overall,data.scores);}catch(e){setAUI("empty");showErr("errBox","Failed: "+e.message);}}
@@ -437,7 +450,7 @@ async function runCompare(){const u1=document.getElementById("cmp1").value.trim(
 function renderCmp(d){const s1=d.site1,s2=d.site2;const sc=s=>s>=75?"#10b981":s>=50?"#f59e0b":"#C0F040";const sU=u=>{try{return new URL(u).hostname.replace(/^www\./,"");}catch(e){return u;}};const w=s1.overall>s2.overall?"A":s2.overall>s1.overall?"B":"Tie";const checks=[["Title",s1.scores.title,s2.scores.title],["Meta Desc",s1.scores.metaDesc,s2.scores.metaDesc],["H1",s1.scores.h1,s2.scores.h1],["HTTPS",s1.scores.https,s2.scores.https],["Canonical",s1.scores.canonical,s2.scores.canonical],["Mobile",s1.scores.viewport,s2.scores.viewport],["OG Tags",s1.scores.ogTags,s2.scores.ogTags],["Images",s1.scores.images,s2.scores.images],["Word Count",s1.scores.wordCount,s2.scores.wordCount],["Schema",s1.scores.structuredData,s2.scores.structuredData]];document.getElementById("cmpResults").innerHTML="<div class=\"cmp-score-row\"><div class=\"cmp-score-box\" style=\"border-color:"+sc(s1.overall)+"55\"><div class=\"val\" style=\"color:"+sc(s1.overall)+"\">"+s1.overall+"%</div><div class=\"lbl\">Site A — "+sU(s1.url)+"</div></div><div class=\"cmp-vs\">vs</div><div class=\"cmp-score-box\" style=\"border-color:"+sc(s2.overall)+"55\"><div class=\"val\" style=\"color:"+sc(s2.overall)+"\">"+s2.overall+"%</div><div class=\"lbl\">Site B — "+sU(s2.url)+"</div></div></div><table class=\"cmp-table\"><thead><tr><th>Check</th><th>"+sU(s1.url)+"</th><th>"+sU(s2.url)+"</th></tr></thead><tbody>"+checks.map(([label,a,b])=>{const aC=a>b?"cmp-win":a<b?"cmp-lose":"cmp-tie";const bC=b>a?"cmp-win":b<a?"cmp-lose":"cmp-tie";return "<tr><td>"+label+"</td><td class=\""+aC+"\">"+a+"%</td><td class=\""+bC+"\">"+b+"%</td></tr>";}).join("")+"</tbody></table><div class=\"winner-card\"><div class=\"winner-label\">Winner</div><div class=\"winner-val\" style=\"color:"+(w==="Tie"?"#f59e0b":"#10b981")+"\">"+(w==="Tie"?"Tie":"Site "+w+" — "+sU(w==="A"?s1.url:s2.url))+"</div></div>";}
 document.getElementById("cmp1").addEventListener("keydown",e=>{if(e.key==="Enter")runCompare();});
 document.getElementById("cmp2").addEventListener("keydown",e=>{if(e.key==="Enter")runCompare();});
-async function runKeywords(){const keyword=document.getElementById("krInput").value.trim();if(!keyword){showErr("krErrBox","Please enter a keyword.");return;}document.getElementById("krEmptyState").style.display="none";document.getElementById("krLoadingState").classList.add("show");document.getElementById("krResults").innerHTML="";document.getElementById("krErrBox").classList.remove("show");const btn=document.getElementById("krBtn");btn.disabled=true;btn.textContent="Researching...";try{const res=await fetch("/api/keywords?keyword="+encodeURIComponent(keyword));const data=await res.json();if(!res.ok||data.error)throw new Error(data.error||"Failed");renderKws(data);}catch(e){document.getElementById("krEmptyState").style.display="block";showErr("krErrBox","Failed: "+e.message);}finally{document.getElementById("krLoadingState").classList.remove("show");btn.disabled=false;btn.textContent="Research";}}
+async function runKeywords(){const keyword=document.getElementById("krInput").value.trim();if(!keyword){showErr("krErrBox","Please enter a keyword.");return;}document.getElementById("krEmptyState").style.display="none";document.getElementById("krLoadingState").classList.add("show");document.getElementById("krResults").innerHTML="";document.getElementById("krErrBox").classList.remove("show");const btn=document.getElementById("krBtn");btn.disabled=true;btn.textContent="Researching...";try{const res=await fetch("/api/keywords?keyword="+encodeURIComponent(keyword));const data=await res.json();if(!res.ok||data.error)throw new Error(data.error||"Failed");renderKws(data);saveKw(keyword,{suggestions:data.suggestions||[],questions:data.questions||[]});}catch(e){document.getElementById("krEmptyState").style.display="block";showErr("krErrBox","Failed: "+e.message);}finally{document.getElementById("krLoadingState").classList.remove("show");btn.disabled=false;btn.textContent="Research";}}
 function renderKws(d){const m=d.metrics;const dc=m.difficulty>=70?"#C0F040":m.difficulty>=40?"#f59e0b":"#10b981";let h="<div class=\"kr-metrics\"><div class=\"kr-metric\"><div class=\"val\" style=\"color:"+m.competitionColor+"\">"+m.competition+"</div><div class=\"lbl\">Competition</div></div><div class=\"kr-metric\"><div class=\"val\" style=\"color:"+dc+"\">"+m.difficulty+"/100</div><div class=\"lbl\">Difficulty</div><div class=\"kr-diff-bar\"><div class=\"kr-diff-fill\" style=\"width:"+m.difficulty+"%;background:"+dc+"\"></div></div></div><div class=\"kr-metric\"><div class=\"val\">"+(m.hasAds?"Yes":"No")+"</div><div class=\"lbl\">Paid Ads</div></div></div>";if(d.suggestions?.length){h+="<div class=\"sec-head\"><div class=\"sec-title\">Related Keywords</div></div><div class=\"tag-cloud\">"+d.suggestions.map(s=>"<button class=\"kr-tag\" onclick=\"setKrKw(this)\" data-kw=\""+s.replace(/"/g,"")+"\">"+s+"</button>").join("")+"</div>";}if(d.questions?.length){h+="<div class=\"sec-head\"><div class=\"sec-title\">People Also Ask</div></div>"+d.questions.map(q=>"<div class=\"question-item\">❓ "+q+"</div>").join("");}if(d.relatedSearches?.length){h+="<div class=\"sec-head\"><div class=\"sec-title\">Related Searches</div></div><div class=\"tag-cloud\">"+d.relatedSearches.map(s=>"<button class=\"kr-tag\" onclick=\"setKrKw(this)\" data-kw=\""+s.replace(/"/g,"")+"\">"+s+"</button>").join("")+"</div>";}document.getElementById("krResults").innerHTML=h;}
 function setKrKw(el){document.getElementById("krInput").value=el.dataset.kw;runKeywords();}
 document.getElementById("krInput").addEventListener("keydown",e=>{if(e.key==="Enter")runKeywords();});
