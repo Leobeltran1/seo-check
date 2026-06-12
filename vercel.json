@@ -7,6 +7,9 @@
     "api/compare.js": { "memory": 1024, "maxDuration": 30 },
     "api/backlinks.js": { "memory": 512, "maxDuration": 15 }
   },
+  "crons": [
+    { "path": "/api/keepalive", "schedule": "0 8 * * *" }
+  ],
   "routes": [
     { "src": "/api/(.*)", "dest": "/api/$1" },
     { "src": "/(.*)", "dest": "/public/$1" }
