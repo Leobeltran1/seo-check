@@ -61,12 +61,5 @@
     "productivity",
     "business",
     "utilities"
-  ],
-  "screenshots": [
-    {
-      "src": "/icons/screenshot1.png",
-      "sizes": "1280x720",
-      "type": "image/png"
-    }
   ]
 }
