@@ -1,4 +1,4 @@
-const CACHE = 'seorocket-v3';
+const CACHE = 'seorocket-v4';
 const STATIC = [
   '/',
   '/index.html',
@@ -6,6 +6,8 @@ const STATIC = [
   '/dashboard.html',
   '/login.html',
   '/signup.html',
+  '/reset-password.html',
+  '/auth.js',
   '/manifest.json',
   'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap'
 ];
@@ -26,12 +28,15 @@ self.addEventListener('activate', e => {
   );
 });
 
-// Fetch — network first for API, cache first for static
+// Fetch strategy:
+//  - API and Supabase calls: network only, never cached
+//  - Pages (HTML) and auth.js: network first so users always get the latest
+//    deploy, with cache fallback for offline
+//  - Everything else (icons, fonts): cache first
 self.addEventListener('fetch', e => {
   const url = new URL(e.request.url);
 
-  // Always hit network for API calls
-  if (url.pathname.startsWith('/api/')) {
+  if (url.pathname.startsWith('/api/') || url.hostname.endsWith('.supabase.co')) {
     e.respondWith(
       fetch(e.request).catch(() =>
         new Response(JSON.stringify({ error: 'You are offline. Please check your connection.' }), {
@@ -42,7 +47,23 @@ self.addEventListener('fetch', e => {
     return;
   }
 
-  // Cache first for everything else
+  const isPage = e.request.mode === 'navigate' ||
+    (e.request.headers.get('accept') || '').includes('text/html') ||
+    url.pathname === '/auth.js';
+
+  if (isPage) {
+    e.respondWith(
+      fetch(e.request).then(res => {
+        if (res && res.status === 200 && res.type !== 'opaque') {
+          const clone = res.clone();
+          caches.open(CACHE).then(cache => cache.put(e.request, clone));
+        }
+        return res;
+      }).catch(() => caches.match(e.request))
+    );
+    return;
+  }
+
   e.respondWith(
     caches.match(e.request).then(cached => {
       if (cached) return cached;
@@ -55,4 +76,3 @@ self.addEventListener('fetch', e => {
     })
   );
 });
-/* cache bust Tue May 26 21:58:04 EDT 2026 */
