@@ -1,4 +1,4 @@
-const CACHE = 'seorocket-v4';
+const CACHE = 'seorocket-v5';
 const STATIC = [
   '/',
   '/index.html',
@@ -7,6 +7,7 @@ const STATIC = [
   '/login.html',
   '/signup.html',
   '/reset-password.html',
+  '/profile.html',
   '/auth.js',
   '/manifest.json',
   'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap'

@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32.png?v=2">
+  <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16.png">
+  <link rel="shortcut icon" href="/favicon.ico?v=2">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<meta charset="UTF-8">
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#C0F040">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Profile — SEO Rocket</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#0B0E1A;
+  --bg2:#0E1120;
+  --card:#0E1120;
+  --red:#C0F040;
+  --red-glow:rgba(192,240,64,0.25);
+  --green:#10b981;
+  --yellow:#f59e0b;
+  --off-white:#F4F6FB;
+  --mid:#94a3b8;
+  --dim:#64748b;
+  --border:rgba(255,255,255,0.08);
+  --danger:#ef4444;
+}
+body{font-family:"Inter",sans-serif;background:var(--bg);color:var(--off-white);min-height:100vh;font-size:16px;}
+a{text-decoration:none;color:inherit;}
+nav{position:sticky;top:0;z-index:100;padding:0 80px;height:80px;display:flex;align-items:center;justify-content:space-between;background:rgba(10,10,15,0.9);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);}
+.nav-logo{font-size:26px;font-weight:900;display:flex;align-items:center;gap:10px;}
+.nav-right{display:flex;align-items:center;gap:16px;}
+.nav-btn{background:none;border:1px solid var(--border);color:var(--mid);padding:12px 28px;border-radius:10px;font-size:16px;font-weight:500;cursor:pointer;transition:all .2s;font-family:"Inter",sans-serif;}
+.nav-btn:hover{border-color:var(--red);color:var(--off-white);}
+.user-avatar{width:48px;height:48px;border-radius:50%;background:var(--red);color:#0B0E1A;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;}
+.container{padding:64px 80px 80px;max-width:1100px;margin:0 auto;}
+.page-head{margin-bottom:48px;}
+.page-head h1{font-size:44px;font-weight:800;letter-spacing:-1px;margin-bottom:10px;}
+.page-head p{font-size:18px;color:var(--mid);}
+.profile-grid{display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:start;}
+.section{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:32px;margin-bottom:28px;}
+.section-title{font-size:20px;font-weight:700;margin-bottom:20px;}
+.section-sub{font-size:14px;color:var(--mid);margin:-12px 0 20px;line-height:1.6;}
+.id-row{display:flex;align-items:center;gap:18px;margin-bottom:24px;}
+.big-avatar{width:72px;height:72px;border-radius:50%;background:var(--red);color:#0B0E1A;display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:800;flex-shrink:0;}
+.id-email{font-size:18px;font-weight:600;word-break:break-all;}
+.id-since{font-size:14px;color:var(--dim);margin-top:4px;}
+.field{margin-bottom:16px;}
+label{display:block;font-size:13px;font-weight:600;color:var(--mid);margin-bottom:6px;}
+input{width:100%;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:12px;padding:13px 16px;font-size:15px;color:var(--off-white);font-family:"Inter",sans-serif;outline:none;transition:border-color .2s;}
+input:focus{border-color:var(--off-white);}
+input::placeholder{color:var(--dim);}
+.btn{background:var(--red);color:#0B0E1A;padding:13px 26px;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;border:none;font-family:"Inter",sans-serif;transition:all .2s;box-shadow:0 0 20px var(--red-glow);}
+.btn:hover{transform:translateY(-1px);box-shadow:0 0 32px var(--red-glow);}
+.btn:disabled{opacity:0.6;cursor:not-allowed;transform:none;}
+.btn-outline{background:none;border:1px solid var(--border);color:var(--mid);padding:13px 26px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:"Inter",sans-serif;transition:all .2s;}
+.btn-outline:hover{border-color:var(--red);color:var(--off-white);}
+.btn-danger{background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.35);color:#f87171;padding:13px 26px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:"Inter",sans-serif;transition:all .2s;}
+.btn-danger:hover{background:rgba(239,68,68,0.2);}
+.msg{border-radius:8px;padding:10px 14px;font-size:13px;margin-bottom:14px;display:none;line-height:1.5;}
+.msg.visible{display:block;}
+.msg.err{background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);color:#fca5a5;}
+.msg.ok{background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);color:#6ee7b7;}
+.stats-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:0;}
+.stat-card{background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:16px;padding:22px;text-align:center;}
+.stat-card .val{font-size:36px;font-weight:900;color:var(--red);}
+.stat-card .lbl{font-size:14px;color:var(--mid);margin-top:6px;}
+.data-row{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:14px 0;border-bottom:1px solid var(--border);}
+.data-row:last-child{border-bottom:none;padding-bottom:0;}
+.data-row .info .name{font-size:15px;font-weight:600;}
+.data-row .info .desc{font-size:13px;color:var(--dim);margin-top:2px;}
+.danger-zone{border-color:rgba(239,68,68,0.25);}
+.logout-row{margin-top:8px;}
+@media(max-width:900px){
+  nav{padding:0 24px;height:64px;}
+  .nav-logo{font-size:20px;}
+  .container{padding:32px 24px;}
+  .profile-grid{grid-template-columns:1fr;}
+  .page-head h1{font-size:32px;}
+}
+@media(max-width:480px){
+  .section{padding:22px;}
+  .data-row{flex-direction:column;align-items:flex-start;}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-logo"><img src="/icons/icon-48.png" style="width:32px;height:32px;border-radius:50%;object-fit:cover;"> SEO <span style="color:#F4F6FB;">Rocket</span></a>
+  <div class="nav-right">
+    <a href="dashboard.html" class="nav-btn">📊 Dashboard</a>
+    <a href="app.html" class="nav-btn">Launch App</a>
+    <div class="user-avatar" id="navAvatar">?</div>
+  </div>
+</nav>
+
+<div class="container">
+  <div class="page-head">
+    <h1>Your Profile</h1>
+    <p>Manage your account, security, and data.</p>
+  </div>
+
+  <div class="profile-grid">
+    <div>
+      <!-- ACCOUNT -->
+      <div class="section">
+        <div class="section-title">Account</div>
+        <div class="id-row">
+          <div class="big-avatar" id="bigAvatar">?</div>
+          <div>
+            <div class="id-email" id="profEmail">—</div>
+            <div class="id-since" id="profSince">Member since —</div>
+          </div>
+        </div>
+        <div class="msg err" id="nameErr"></div>
+        <div class="msg ok" id="nameOk"></div>
+        <div class="field"><label>Display name</label><input type="text" id="displayName" placeholder="How should we greet you?" maxlength="40"/></div>
+        <button class="btn" id="nameBtn" onclick="saveName()">Save name</button>
+      </div>
+
+      <!-- PASSWORD -->
+      <div class="section">
+        <div class="section-title">Change password</div>
+        <div class="msg err" id="passErr"></div>
+        <div class="msg ok" id="passOk"></div>
+        <div class="field"><label>Current password</label><input type="password" id="curPass" placeholder="Your current password" autocomplete="current-password"/></div>
+        <div class="field"><label>New password</label><input type="password" id="newPass" placeholder="Min. 8 characters" autocomplete="new-password"/></div>
+        <div class="field"><label>Confirm new password</label><input type="password" id="confPass" placeholder="Repeat new password" autocomplete="new-password"/></div>
+        <button class="btn" id="passBtn" onclick="changePassword()">Update password</button>
+      </div>
+
+      <!-- EMAIL -->
+      <div class="section">
+        <div class="section-title">Change email</div>
+        <p class="section-sub">We'll send a confirmation link to the new address before the change takes effect.</p>
+        <div class="msg err" id="emailErr"></div>
+        <div class="msg ok" id="emailOk"></div>
+        <div class="field"><label>New email address</label><input type="email" id="newEmail" placeholder="new@example.com" autocomplete="email"/></div>
+        <button class="btn" id="emailBtn" onclick="changeEmail()">Update email</button>
+      </div>
+    </div>
+
+    <div>
+      <!-- USAGE -->
+      <div class="section">
+        <div class="section-title">Your activity</div>
+        <div class="stats-row">
+          <div class="stat-card"><div class="val" id="statAudits">—</div><div class="lbl">SEO Audits</div></div>
+          <div class="stat-card"><div class="val" id="statSearches">—</div><div class="lbl">Keyword Searches</div></div>
+        </div>
+      </div>
+
+      <!-- DATA -->
+      <div class="section">
+        <div class="section-title">Your data</div>
+        <div class="msg err" id="dataErr"></div>
+        <div class="msg ok" id="dataOk"></div>
+        <div class="data-row">
+          <div class="info"><div class="name">Audit history</div><div class="desc">Remove all saved SEO audits from your dashboard.</div></div>
+          <button class="btn-outline" onclick="clearData('audits','audit history')">Clear</button>
+        </div>
+        <div class="data-row">
+          <div class="info"><div class="name">Search history</div><div class="desc">Remove all saved keyword searches.</div></div>
+          <button class="btn-outline" onclick="clearData('keyword_searches','search history')">Clear</button>
+        </div>
+      </div>
+
+      <!-- DANGER -->
+      <div class="section danger-zone">
+        <div class="section-title">Danger zone</div>
+        <div class="msg err" id="dangerErr"></div>
+        <div class="data-row">
+          <div class="info"><div class="name">Delete account</div><div class="desc">Permanently deletes your account and all saved data. This cannot be undone.</div></div>
+          <button class="btn-danger" onclick="deleteAccount()">Delete</button>
+        </div>
+      </div>
+
+      <div class="logout-row">
+        <button class="btn-outline" style="width:100%;" onclick="logout()">Log out</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="/auth.js"></script>
+<script>
+if(!seorLoggedIn()){ window.location.href = 'login.html'; }
+const user = seorGetUser() || {};
+
+function show(id,msg){const el=document.getElementById(id);el.textContent=msg;el.classList.add('visible');}
+function hide(){document.querySelectorAll('.msg').forEach(m=>m.classList.remove('visible'));}
+
+/* Authenticated call to the Supabase auth API (account-level changes). */
+async function seorAuthCall(method, body){
+  const token = await seorGetValidToken();
+  if(!token) throw new Error('not-authenticated');
+  const res = await fetch(SEOR_URL+'/auth/v1/user',{
+    method,
+    headers:{'Content-Type':'application/json','apikey':SEOR_KEY,'Authorization':'Bearer '+token},
+    body: JSON.stringify(body)
+  });
+  const data = await res.json();
+  if(!res.ok) throw new Error(data.msg||data.error_description||'Request failed.');
+  return data;
+}
+
+function paint(){
+  const u = seorGetUser() || {};
+  const email = u.email || '';
+  const initial = (u.user_metadata?.full_name || email || '?')[0].toUpperCase();
+  const created = u.created_at ? new Date(u.created_at) : new Date();
+  document.getElementById('navAvatar').textContent = initial;
+  document.getElementById('bigAvatar').textContent = initial;
+  document.getElementById('profEmail').textContent = email;
+  document.getElementById('profSince').textContent = 'Member since ' + created.toLocaleDateString('en-US',{month:'long',year:'numeric'});
+  document.getElementById('displayName').value = u.user_metadata?.full_name || '';
+}
+paint();
+
+async function loadStats(){
+  for(const [table, el] of [['audits','statAudits'],['keyword_searches','statSearches']]){
+    try{
+      const res = await seorRest(table+'?select=id&user_id=eq.'+user.id, {method:'HEAD', headers:{'Prefer':'count=exact'}});
+      const range = res.headers.get('content-range') || '/0';
+      document.getElementById(el).textContent = range.split('/')[1] || '0';
+    }catch(e){
+      if(e.message==='not-authenticated'){ window.location.href='login.html'; return; }
+      document.getElementById(el).textContent = '—';
+    }
+  }
+}
+loadStats();
+
+async function saveName(){
+  hide();
+  const name = document.getElementById('displayName').value.trim();
+  const btn = document.getElementById('nameBtn');
+  btn.disabled = true; btn.textContent = 'Saving...';
+  try{
+    const updated = await seorAuthCall('PUT', {data:{full_name: name}});
+    localStorage.setItem('SEORocket_user', JSON.stringify(updated));
+    paint();
+    show('nameOk', name ? 'Saved — we\'ll call you '+name+'.' : 'Display name removed.');
+  }catch(e){ show('nameErr', e.message==='not-authenticated'?'Session expired — please log in again.':e.message); }
+  btn.disabled = false; btn.textContent = 'Save name';
+}
+
+async function changePassword(){
+  hide();
+  const cur = document.getElementById('curPass').value;
+  const next = document.getElementById('newPass').value;
+  const conf = document.getElementById('confPass').value;
+  if(!cur||!next||!conf){ show('passErr','Please fill in all three fields.'); return; }
+  if(next.length<8){ show('passErr','New password must be at least 8 characters.'); return; }
+  if(next!==conf){ show('passErr','New passwords do not match.'); return; }
+  const btn = document.getElementById('passBtn');
+  btn.disabled = true; btn.textContent = 'Updating...';
+  try{
+    /* verify the current password before allowing the change */
+    const check = await fetch(SEOR_URL+'/auth/v1/token?grant_type=password',{
+      method:'POST',headers:{'Content-Type':'application/json','apikey':SEOR_KEY},
+      body:JSON.stringify({email:(seorGetUser()||{}).email, password:cur})
+    });
+    if(!check.ok){ show('passErr','Current password is incorrect.'); btn.disabled=false; btn.textContent='Update password'; return; }
+    await seorAuthCall('PUT', {password: next});
+    document.getElementById('curPass').value=''; document.getElementById('newPass').value=''; document.getElementById('confPass').value='';
+    show('passOk','Password updated.');
+  }catch(e){ show('passErr', e.message==='not-authenticated'?'Session expired — please log in again.':e.message); }
+  btn.disabled = false; btn.textContent = 'Update password';
+}
+
+async function changeEmail(){
+  hide();
+  const next = document.getElementById('newEmail').value.trim();
+  if(!next){ show('emailErr','Please enter the new email address.'); return; }
+  const btn = document.getElementById('emailBtn');
+  btn.disabled = true; btn.textContent = 'Sending...';
+  try{
+    await seorAuthCall('PUT', {email: next});
+    show('emailOk','Confirmation sent to '+next+' — the change applies once you click the link.');
+    document.getElementById('newEmail').value='';
+  }catch(e){ show('emailErr', e.message==='not-authenticated'?'Session expired — please log in again.':e.message); }
+  btn.disabled = false; btn.textContent = 'Update email';
+}
+
+async function clearData(table, label){
+  hide();
+  if(!confirm('Clear your entire '+label+'? This cannot be undone.')) return;
+  try{
+    const res = await seorRest(table+'?user_id=eq.'+user.id, {method:'DELETE'});
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    show('dataOk','Your '+label+' has been cleared.');
+    loadStats();
+  }catch(e){ show('dataErr', e.message==='not-authenticated'?'Session expired — please log in again.':'Could not clear '+label+'.'); }
+}
+
+async function deleteAccount(){
+  hide();
+  if(!confirm('Delete your SEO Rocket account and ALL saved data? This cannot be undone.')) return;
+  const typed = prompt('Type DELETE to permanently remove your account:');
+  if(typed !== 'DELETE') return;
+  try{
+    const res = await seorRest('rpc/delete_my_account', {method:'POST', body:'{}'});
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    seorClearSession();
+    alert('Your account has been deleted.');
+    window.location.href = 'index.html';
+  }catch(e){ show('dangerErr', e.message==='not-authenticated'?'Session expired — please log in again.':'Could not delete the account. Please try again.'); }
+}
+
+function logout(){
+  seorClearSession();
+  window.location.href = 'index.html';
+}
+</script>
+  <script>
+    if('serviceWorker' in navigator){
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+          .then(r => console.log('SW registered'))
+          .catch(e => console.log('SW failed', e));
+      });
+    }
+  </script>
+</body>
+</html>
