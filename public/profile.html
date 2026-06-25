@@ -153,6 +153,17 @@ input::placeholder{color:var(--dim);}
         </div>
       </div>
 
+      <!-- EMAIL REPORTS -->
+      <div class="section">
+        <div class="section-title">Email reports</div>
+        <div class="msg err" id="prefErr"></div>
+        <div class="msg ok" id="prefOk"></div>
+        <div class="data-row">
+          <div class="info"><div class="name">Weekly digest &amp; rank alerts</div><div class="desc">Get a weekly summary of your rankings and an alert when a tracked keyword drops.</div></div>
+          <button class="btn-outline" id="prefToggle" onclick="toggleEmailReports()">…</button>
+        </div>
+      </div>
+
       <!-- DATA -->
       <div class="section">
         <div class="section-title">Your data</div>
@@ -233,6 +244,36 @@ async function loadStats(){
   }
 }
 loadStats();
+
+let emailReportsOn = true;
+async function loadPrefs(){
+  const btn = document.getElementById('prefToggle');
+  try{
+    const res = await seorRest('profiles?select=email_reports&id=eq.'+user.id);
+    if(res.ok){ const rows = await res.json(); emailReportsOn = rows.length ? rows[0].email_reports !== false : true; }
+  }catch(e){ if(e.message==='not-authenticated'){ window.location.href='login.html'; return; } }
+  paintPref();
+}
+function paintPref(){
+  const btn = document.getElementById('prefToggle');
+  btn.textContent = emailReportsOn ? 'On ✓' : 'Off';
+  btn.style.color = emailReportsOn ? '#0B0E1A' : 'var(--mid)';
+  btn.style.background = emailReportsOn ? 'var(--red)' : 'none';
+  btn.style.borderColor = emailReportsOn ? 'var(--red)' : 'var(--border)';
+}
+async function toggleEmailReports(){
+  hide();
+  const next = !emailReportsOn;
+  const btn = document.getElementById('prefToggle'); btn.disabled = true;
+  try{
+    const res = await seorRest('profiles?id=eq.'+user.id, {method:'PATCH', headers:{'Prefer':'return=minimal'}, body: JSON.stringify({email_reports: next})});
+    if(!res.ok) throw new Error('save failed');
+    emailReportsOn = next; paintPref();
+    show('prefOk', next ? 'Email reports turned on.' : 'Email reports turned off.');
+  }catch(e){ show('prefErr', e.message==='not-authenticated'?'Session expired — please log in again.':'Could not update preference.'); }
+  btn.disabled = false;
+}
+loadPrefs();
 
 async function saveName(){
   hide();
