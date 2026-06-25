@@ -1,4 +1,4 @@
-const CACHE = 'seorocket-v5';
+const CACHE = 'seorocket-v6';
 const STATIC = [
   '/',
   '/index.html',

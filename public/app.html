@@ -294,6 +294,7 @@ body{font-family:"Inter",sans-serif;background:#0B0E1A;color:#F4F6FB;display:fle
   <button class="tab" id="tab-compare" onclick="switchTab('compare')"><span>⚖️</span> SEO Compare</button>
   <button class="tab" id="tab-keywords" onclick="switchTab('keywords')"><span>🔑</span> Keyword Research</button>
   <button class="tab" id="tab-backlinks" onclick="switchTab('backlinks')"><span>🔗</span> Backlink Checker</button>
+  <button class="tab" id="tab-aeo" onclick="switchTab('aeo')"><span>🤖</span> AI Optimization</button>
 </div>
 <div class="main">
 <div class="view active" id="view-seo">
@@ -400,6 +401,22 @@ body{font-family:"Inter",sans-serif;background:#0B0E1A;color:#F4F6FB;display:fle
     <div id="blResults"></div>
   </div>
 </div>
+<div class="view" id="view-aeo">
+  <div class="tool-hero"><div class="tool-hero-inner">
+    <div class="tool-title">AI Optimization (AEO)</div>
+    <div class="tool-sub">See how ready your page is to be cited by AI answer engines — ChatGPT, Perplexity, Gemini, Google AI Overviews — with a prioritized fix list.</div>
+    <div class="input-row">
+      <input class="main-input" type="url" id="aeoInput" placeholder="https://yourwebsite.com" autocomplete="off" spellcheck="false"/>
+      <button class="run-btn" id="aeoBtn" onclick="runAeo()">Analyze</button>
+    </div>
+  </div></div>
+  <div class="results">
+    <div class="err-banner" id="aeoErrBox"></div>
+    <div class="empty-state" id="aeoEmptyState"><div class="empty-icon">🤖</div><div class="empty-title">Check your AI answer-engine readiness</div><div class="empty-sub">Enter a URL to score its structured data, answer-friendly content, AI crawler access, and more.</div></div>
+    <div class="loading-state" id="aeoLoadingState"><div class="spinner"></div><div class="loading-title">Analyzing AEO readiness...</div><div class="loading-sub-txt">Fetching page, robots.txt, schema & content signals</div></div>
+    <div id="aeoResults"></div>
+  </div>
+</div>
 </div>
 <script src="/auth.js"></script>
 <script>
@@ -457,6 +474,32 @@ document.getElementById("krInput").addEventListener("keydown",e=>{if(e.key==="En
 async function runBacklinks(){const url=document.getElementById("blInput").value.trim();if(!url){showErr("blErrBox","Please enter a URL.");return;}document.getElementById("blEmptyState").style.display="none";document.getElementById("blLoadingState").classList.add("show");document.getElementById("blResults").innerHTML="";document.getElementById("blErrBox").classList.remove("show");const btn=document.getElementById("blBtn");btn.disabled=true;btn.textContent="Checking...";try{const res=await fetch("/api/backlinks?url="+encodeURIComponent(url));const data=await res.json();if(!res.ok||data.error)throw new Error(data.error||"Failed");renderBl(data);}catch(e){document.getElementById("blEmptyState").style.display="block";showErr("blErrBox","Failed: "+e.message);}finally{document.getElementById("blLoadingState").classList.remove("show");btn.disabled=false;btn.textContent="Check";}}
 function renderBl(d){const score=Math.round(d.pageRank*10);const color=score>=70?"#10b981":score>=40?"#f59e0b":"#C0F040";const stars=score>=70?"⭐⭐⭐⭐⭐":score>=50?"⭐⭐⭐⭐":score>=30?"⭐⭐⭐":score>=15?"⭐⭐":"⭐";const label=score>=70?"Excellent Authority":score>=50?"Good Authority":score>=30?"Average Authority":score>=15?"Low Authority":"Very Low Authority";const offset=314-(score/100)*314;document.getElementById("blResults").innerHTML="<div class=\"bl-card\"><div class=\"bl-domain\">"+d.domain+"</div><div class=\"bl-ring-wrap\"><svg viewBox=\"0 0 100 100\"><circle class=\"bl-ring-bg\" cx=\"50\" cy=\"50\" r=\"50\"/><circle class=\"bl-ring-fill\" cx=\"50\" cy=\"50\" r=\"50\" style=\"stroke:"+color+";stroke-dashoffset:"+offset+"\"/></svg><div class=\"bl-score-num\"><div class=\"big\" style=\"color:"+color+"\">"+d.pageRankInt+"</div><div class=\"small\">/10</div></div></div><div class=\"bl-stars\">"+stars+"</div><div class=\"bl-verdict\" style=\"color:"+color+"\">"+label+"</div><div class=\"bl-metrics\"><div class=\"bl-metric\"><div class=\"val\">"+d.pageRankInt+"/10</div><div class=\"lbl\">Page Rank</div></div><div class=\"bl-metric\"><div class=\"val\">"+(d.rank!=="N/A"?"#"+parseInt(d.rank).toLocaleString():"N/A")+"</div><div class=\"lbl\">Global Rank</div></div><div class=\"bl-metric\"><div class=\"val\">"+d.pageRank.toFixed(2)+"</div><div class=\"lbl\">OPR Score</div></div></div><div class=\"bl-note\">Open Page Rank scores range from 0-10 based on backlink quality and quantity.</div></div>";}
 document.getElementById("blInput").addEventListener("keydown",e=>{if(e.key==="Enter")runBacklinks();});
+async function runAeo(){let url=document.getElementById("aeoInput").value.trim();if(!url){showErr("aeoErrBox","Please enter a URL.");return;}if(!/^https?:\/\//i.test(url))url="https://"+url;document.getElementById("aeoInput").value=url;document.getElementById("aeoEmptyState").style.display="none";document.getElementById("aeoResults").innerHTML="";document.getElementById("aeoLoadingState").classList.add("show");document.getElementById("aeoErrBox").classList.remove("show");const btn=document.getElementById("aeoBtn");btn.disabled=true;btn.textContent="Analyzing...";try{const res=await fetch("/api/aeo?url="+encodeURIComponent(url));const data=await res.json();if(!res.ok||data.error)throw new Error(data.error||"Analysis failed");renderAeo(data);saveAudit(data.url,data.overall,Object.assign({type:"aeo"},data.scores));}catch(e){document.getElementById("aeoEmptyState").style.display="block";showErr("aeoErrBox","Failed: "+e.message);}finally{document.getElementById("aeoLoadingState").classList.remove("show");btn.disabled=false;btn.textContent="Analyze";}}
+document.getElementById("aeoInput").addEventListener("keydown",e=>{if(e.key==="Enter")runAeo();});
+function renderAeo(d){
+  const labels={structuredData:"Structured Data",answerContent:"Answer-Friendly Content",crawlerAccess:"AI Crawler Access",structure:"Content Structure",authority:"Authority & Trust",metadata:"Metadata & Entities"};
+  const order=["structuredData","answerContent","crawlerAccess","structure","authority","metadata"];
+  const col=v=>v>=75?"#10b981":v>=50?"#f59e0b":"#C0F040";
+  const grade=v=>v>=80?"Excellent":v>=65?"Good":v>=45?"Needs work":"Poor";
+  let h="";
+  // score header
+  h+="<div style=\"display:flex;align-items:center;gap:24px;flex-wrap:wrap;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:16px;\">";
+  h+="<div style=\"font-size:52px;font-weight:900;color:"+col(d.overall)+";line-height:1;\">"+d.overall+"<span style=\"font-size:22px;color:var(--mid);\">/100</span></div>";
+  h+="<div><div style=\"font-size:18px;font-weight:700;color:"+col(d.overall)+";\">"+grade(d.overall)+" AEO readiness</div><div style=\"font-size:13px;color:var(--mid);margin-top:4px;\">"+(d.stats?d.stats.words+" words · "+(d.stats.schemaTypes.length?d.stats.schemaTypes.join(", "):"no schema")+(d.stats.blockedBots&&d.stats.blockedBots.length?" · ⚠ blocks "+d.stats.blockedBots.length+" AI bot(s)":""):"")+"</div></div></div>";
+  // category bars
+  h+="<div style=\"background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:16px;\">";
+  for(const k of order){const v=d.scores[k]||0;h+="<div class=\"cat-row\" style=\"margin-bottom:14px;\"><div class=\"cat-head\" style=\"display:flex;justify-content:space-between;margin-bottom:6px;\"><span class=\"cat-name\" style=\"font-size:14px;font-weight:600;\">"+labels[k]+"</span><span class=\"cat-pct\" style=\"font-size:14px;font-weight:700;color:"+col(v)+";\">"+v+"%</span></div><div class=\"bar-track\" style=\"height:8px;background:rgba(255,255,255,0.06);border-radius:6px;overflow:hidden;\"><div style=\"height:100%;width:"+v+"%;background:"+col(v)+";border-radius:6px;transition:width .5s;\"></div></div></div>";}
+  h+="</div>";
+  // prioritized fixes
+  if(d.tasks&&d.tasks.length){h+="<div style=\"background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:16px;\"><div style=\"font-size:16px;font-weight:700;margin-bottom:14px;\">🎯 Priority Fixes</div>";for(const t of d.tasks){h+="<div style=\"display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);font-size:14px;\"><span style=\"color:#C0F040;\">→</span><span>"+esc(t)+"</span></div>";}h+="</div>";}
+  // detailed checks
+  for(const k of order){const list=d.checks[k]||[];h+="<div style=\"background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px 24px;margin-bottom:12px;\"><div style=\"display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;\"><span style=\"font-size:15px;font-weight:700;\">"+labels[k]+"</span><span style=\"font-size:13px;font-weight:700;color:"+col(d.scores[k])+";\">"+(d.scores[k]||0)+"%</span></div>";
+    for(const c of list){const sym=c.status==="pass"?"✓":c.status==="warn"?"⚠":"✕";const sc=c.status==="pass"?"#10b981":c.status==="warn"?"#f59e0b":"#C0F040";h+="<div style=\"display:flex;gap:10px;padding:7px 0;font-size:13px;align-items:flex-start;\"><span style=\"color:"+sc+";flex-shrink:0;font-weight:700;\">"+sym+"</span><span><span style=\"font-weight:600;\">"+esc(c.name)+"</span><span style=\"color:var(--mid);\"> — "+esc(c.detail)+"</span></span></div>";}
+    h+="</div>";}
+  h+="<div class=\"data-note\" style=\"text-align:center;color:var(--dim);font-size:12px;margin-top:8px;\">AEO analysis · "+new Date(d.meta&&d.meta.analyzedAt||Date.now()).toLocaleString()+"</div>";
+  document.getElementById("aeoResults").innerHTML=h;
+}
+function esc(s){return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
 function showErr(id,msg){const el=document.getElementById(id);if(el){el.textContent=msg;el.classList.add("show");}}
 function togCI(id){document.getElementById(id).classList.toggle("open");}
 function animNum(id,target,suffix){const el=document.getElementById(id);let cur=0;const step=Math.max(1,target/40);const iv=setInterval(()=>{cur=Math.min(cur+step,target);el.textContent=Math.round(cur)+suffix;if(cur>=target)clearInterval(iv);},28);}
