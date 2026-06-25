@@ -1,16 +1,23 @@
 const https = require('https');
 const http = require('http');
 const { URL } = require('url');
+const { rateLimit, validatePublicUrl } = require('./_guard.js');
 
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
   if (req.method === 'OPTIONS') return res.status(200).end();
 
-  let { url1, url2 } = req.query;
-  if (!url1 || !url2) return res.status(400).json({ error: 'Two URLs required.' });
-  if (!/^https?:\/\//i.test(url1)) url1 = 'https://' + url1;
-  if (!/^https?:\/\//i.test(url2)) url2 = 'https://' + url2;
+  const rl = await rateLimit(req, 'compare', 12, 60);
+  if (!rl.ok) { res.setHeader('Retry-After', rl.retryAfter); return res.status(429).json({ error: 'Too many requests — please wait a minute and try again.' }); }
+
+  let url1, url2;
+  try {
+    if (!req.query.url1 || !req.query.url2) { const e = new Error('Two URLs required.'); e.code = 'BAD_URL'; throw e; }
+    [url1, url2] = await Promise.all([validatePublicUrl(req.query.url1), validatePublicUrl(req.query.url2)]);
+  } catch (e) {
+    return res.status(e.code === 'SSRF' ? 403 : 400).json({ error: e.message });
+  }
 
   try {
     const [r1, r2] = await Promise.all([fetchAndScore(url1), fetchAndScore(url2)]);

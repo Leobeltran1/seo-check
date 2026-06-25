@@ -7,18 +7,23 @@
 const https = require('https');
 const http = require('http');
 const { URL } = require('url');
+const { rateLimit, validatePublicUrl } = require('./_guard.js');
 
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
   if (req.method === 'OPTIONS') return res.status(200).end();
 
-  let { url } = req.query;
-  if (!url) return res.status(400).json({ error: 'URL is required.' });
-  if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
+  const rl = await rateLimit(req, 'aeo', 20, 60);
+  if (!rl.ok) { res.setHeader('Retry-After', rl.retryAfter); return res.status(429).json({ error: 'Too many requests — please wait a minute and try again.' }); }
 
-  let origin;
-  try { origin = new URL(url).origin; } catch (e) { return res.status(400).json({ error: 'Invalid URL.' }); }
+  let url, origin;
+  try {
+    url = await validatePublicUrl(req.query.url);
+    origin = new URL(url).origin;
+  } catch (e) {
+    return res.status(e.code === 'SSRF' ? 403 : 400).json({ error: e.message });
+  }
 
   try {
     const page = await fetchURL(url);

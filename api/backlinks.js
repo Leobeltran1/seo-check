@@ -1,10 +1,14 @@
 const https = require('https');
 const { URL } = require('url');
+const { rateLimit } = require('./_guard.js');
 
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
   if (req.method === 'OPTIONS') return res.status(200).end();
+
+  const rl = await rateLimit(req, 'backlinks', 20, 60);
+  if (!rl.ok) { res.setHeader('Retry-After', rl.retryAfter); return res.status(429).json({ error: 'Too many requests — please wait a minute and try again.' }); }
 
   let { url } = req.query;
   const key = process.env.OPENPAGERANK_KEY;

@@ -1,15 +1,19 @@
 const https = require('https');
 const http = require('http');
 const { URL } = require('url');
+const { rateLimit, validatePublicUrl } = require('./_guard.js');
 
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
   if (req.method === 'OPTIONS') return res.status(200).end();
 
-  let { url, psiKey } = req.query;
-  if (!url) return res.status(400).json({ error: 'URL required' });
-  if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
+  const rl = await rateLimit(req, 'analyze', 15, 60);
+  if (!rl.ok) { res.setHeader('Retry-After', rl.retryAfter); return res.status(429).json({ error: 'Too many requests — please wait a minute and try again.' }); }
+
+  let url; const psiKey = req.query.psiKey;
+  try { url = await validatePublicUrl(req.query.url); }
+  catch (e) { return res.status(e.code === 'SSRF' ? 403 : 400).json({ error: e.message }); }
 
   try {
     const [htmlResult, psiDesktop, psiMobile] = await Promise.allSettled([
