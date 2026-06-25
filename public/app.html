@@ -295,6 +295,7 @@ body{font-family:"Inter",sans-serif;background:#0B0E1A;color:#F4F6FB;display:fle
   <button class="tab" id="tab-keywords" onclick="switchTab('keywords')"><span>🔑</span> Keyword Research</button>
   <button class="tab" id="tab-backlinks" onclick="switchTab('backlinks')"><span>🔗</span> Backlink Checker</button>
   <button class="tab" id="tab-aeo" onclick="switchTab('aeo')"><span>🤖</span> AI Optimization</button>
+  <button class="tab" id="tab-schema" onclick="switchTab('schema')"><span>🏷️</span> Schema Generator</button>
 </div>
 <div class="main">
 <div class="view active" id="view-seo">
@@ -417,6 +418,22 @@ body{font-family:"Inter",sans-serif;background:#0B0E1A;color:#F4F6FB;display:fle
     <div id="aeoResults"></div>
   </div>
 </div>
+<div class="view" id="view-schema">
+  <div class="tool-hero"><div class="tool-hero-inner">
+    <div class="tool-title">Schema Generator</div>
+    <div class="tool-sub">Generate ready-to-paste JSON-LD structured data (FAQ, Article, Organization) from any page — the markup that feeds Google rich results and AI answer engines.</div>
+    <div class="input-row">
+      <input class="main-input" type="url" id="schemaInput" placeholder="https://yourwebsite.com/page" autocomplete="off" spellcheck="false"/>
+      <button class="run-btn" id="schemaBtn" onclick="runSchema()">Generate</button>
+    </div>
+  </div></div>
+  <div class="results">
+    <div class="err-banner" id="schemaErrBox"></div>
+    <div class="empty-state" id="schemaEmptyState"><div class="empty-icon">🏷️</div><div class="empty-title">Generate structured data</div><div class="empty-sub">Enter a URL to extract FAQ pairs and metadata into copy-paste JSON-LD schema.</div></div>
+    <div class="loading-state" id="schemaLoadingState"><div class="spinner"></div><div class="loading-title">Generating schema...</div><div class="loading-sub-txt">Fetching page, extracting Q&A and metadata</div></div>
+    <div id="schemaResults"></div>
+  </div>
+</div>
 </div>
 <script src="/auth.js"></script>
 <script>
@@ -500,6 +517,19 @@ function renderAeo(d){
   document.getElementById("aeoResults").innerHTML=h;
 }
 function esc(s){return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
+async function runSchema(){let url=document.getElementById("schemaInput").value.trim();if(!url){showErr("schemaErrBox","Please enter a URL.");return;}if(!/^https?:\/\//i.test(url))url="https://"+url;document.getElementById("schemaInput").value=url;document.getElementById("schemaEmptyState").style.display="none";document.getElementById("schemaResults").innerHTML="";document.getElementById("schemaLoadingState").classList.add("show");document.getElementById("schemaErrBox").classList.remove("show");const btn=document.getElementById("schemaBtn");btn.disabled=true;btn.textContent="Generating...";try{const res=await fetch("/api/schema?url="+encodeURIComponent(url));const data=await res.json();if(!res.ok||data.error)throw new Error(data.error||"Generation failed");renderSchema(data);}catch(e){document.getElementById("schemaEmptyState").style.display="block";showErr("schemaErrBox","Failed: "+e.message);}finally{document.getElementById("schemaLoadingState").classList.remove("show");btn.disabled=false;btn.textContent="Generate";}}
+document.getElementById("schemaInput").addEventListener("keydown",e=>{if(e.key==="Enter")runSchema();});
+window._schemaBlocks={};
+function renderSchema(d){
+  const labels={faq:{t:"FAQ Page",d:d.faqCount+" question/answer pair(s) extracted"},article:{t:"Article",d:"Page metadata as Article schema"},organization:{t:"Organization",d:"Site/brand entity schema"}};
+  let h="";
+  h+="<div style=\"background:var(--card);border:1px solid var(--border);border-radius:16px;padding:18px 22px;margin-bottom:16px;font-size:14px;color:var(--mid);\">"+(d.hasExistingSchema?"⚠ This page already has some JSON-LD — review before adding duplicates. ":"✓ No existing JSON-LD detected. ")+(d.faqCount?("Found <b style=\"color:var(--off-white)\">"+d.faqCount+"</b> FAQ pair(s)."):"No FAQ-style headings found — Article & Organization still generated.")+"</div>";
+  window._schemaBlocks={};
+  for(const k of ["faq","article","organization"]){if(!d.schemas[k])continue;window._schemaBlocks[k]=d.schemas[k];h+="<div style=\"background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px 22px;margin-bottom:14px;\"><div style=\"display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;\"><div><div style=\"font-size:16px;font-weight:700;\">"+labels[k].t+"</div><div style=\"font-size:12px;color:var(--mid);margin-top:2px;\">"+labels[k].d+"</div></div><button onclick=\"copySchema('"+k+"',this)\" style=\"background:var(--red);color:#0B0E1A;border:none;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;\">Copy</button></div><pre style=\"background:#070912;border:1px solid var(--border);border-radius:10px;padding:14px;overflow:auto;font-size:12px;line-height:1.5;color:#c8d4f0;font-family:ui-monospace,Menlo,monospace;max-height:340px;white-space:pre;\">"+esc(d.schemas[k])+"</pre></div>";}
+  h+="<div style=\"font-size:13px;color:var(--dim);text-align:center;margin-top:6px;\">Paste a block into your page &lt;head&gt;. Review the auto-extracted text before publishing.</div>";
+  document.getElementById("schemaResults").innerHTML=h;
+}
+function copySchema(k,btn){const t=window._schemaBlocks[k]||"";navigator.clipboard.writeText(t).then(()=>{const o=btn.textContent;btn.textContent="Copied ✓";setTimeout(()=>btn.textContent=o,1600);}).catch(()=>{btn.textContent="Copy failed";});}
 function showErr(id,msg){const el=document.getElementById(id);if(el){el.textContent=msg;el.classList.add("show");}}
 function togCI(id){document.getElementById(id).classList.toggle("open");}
 function animNum(id,target,suffix){const el=document.getElementById(id);let cur=0;const step=Math.max(1,target/40);const iv=setInterval(()=>{cur=Math.min(cur+step,target);el.textContent=Math.round(cur)+suffix;if(cur>=target)clearInterval(iv);},28);}

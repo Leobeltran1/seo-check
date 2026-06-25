@@ -6,7 +6,8 @@
     "api/keywords.js": { "memory": 512, "maxDuration": 15 },
     "api/compare.js": { "memory": 1024, "maxDuration": 30 },
     "api/backlinks.js": { "memory": 512, "maxDuration": 15 },
-    "api/aeo.js": { "memory": 512, "maxDuration": 20 }
+    "api/aeo.js": { "memory": 512, "maxDuration": 20 },
+    "api/schema.js": { "memory": 512, "maxDuration": 20 }
   },
   "crons": [
     { "path": "/api/keepalive", "schedule": "0 8 * * *" }
