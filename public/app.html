@@ -296,6 +296,7 @@ body{font-family:"Inter",sans-serif;background:#0B0E1A;color:#F4F6FB;display:fle
   <button class="tab" id="tab-backlinks" onclick="switchTab('backlinks')"><span>🔗</span> Backlink Checker</button>
   <button class="tab" id="tab-aeo" onclick="switchTab('aeo')"><span>🤖</span> AI Optimization</button>
   <button class="tab" id="tab-schema" onclick="switchTab('schema')"><span>🏷️</span> Schema Generator</button>
+  <button class="tab" id="tab-tracker" onclick="switchTab('tracker');loadTracker();"><span>📈</span> Rank Tracker</button>
 </div>
 <div class="main">
 <div class="view active" id="view-seo">
@@ -434,6 +435,21 @@ body{font-family:"Inter",sans-serif;background:#0B0E1A;color:#F4F6FB;display:fle
     <div id="schemaResults"></div>
   </div>
 </div>
+<div class="view" id="view-tracker">
+  <div class="tool-hero"><div class="tool-hero-inner">
+    <div class="tool-title">Rank Tracker</div>
+    <div class="tool-sub">Track where your site ranks for keywords over time. Add a keyword + domain and we'll record its Google position and chart the trend.</div>
+    <div class="input-row" id="trackerForm" style="flex-wrap:wrap;">
+      <input class="main-input" type="text" id="trkKeyword" placeholder="keyword (e.g. fiber optic cabling miami)" autocomplete="off" spellcheck="false" style="min-width:220px;"/>
+      <input class="main-input" type="text" id="trkDomain" placeholder="yourdomain.com" autocomplete="off" spellcheck="false" style="min-width:160px;"/>
+      <button class="run-btn" id="trkBtn" onclick="addTracked()">Track</button>
+    </div>
+  </div></div>
+  <div class="results">
+    <div class="err-banner" id="trkErrBox"></div>
+    <div id="trkBody"></div>
+  </div>
+</div>
 </div>
 <script src="/auth.js"></script>
 <script>
@@ -530,6 +546,99 @@ function renderSchema(d){
   document.getElementById("schemaResults").innerHTML=h;
 }
 function copySchema(k,btn){const t=window._schemaBlocks[k]||"";navigator.clipboard.writeText(t).then(()=>{const o=btn.textContent;btn.textContent="Copied ✓";setTimeout(()=>btn.textContent=o,1600);}).catch(()=>{btn.textContent="Copy failed";});}
+
+// ── Rank Tracker ──
+function posLabel(p){return (p==null)?"Not in top 10":"#"+p;}
+function posColor(p){return (p==null)?"#94a3b8":p<=3?"#10b981":p<=10?"#f59e0b":"#C0F040";}
+function sparkline(hist){
+  const pts=hist.filter(h=>h.position!=null);
+  if(pts.length<2)return "<span style=\"font-size:12px;color:var(--dim);\">need 2+ checks for a trend</span>";
+  const w=160,h=36,max=Math.max(...pts.map(p=>p.position),10);
+  const xs=(i)=>pts.length===1?0:(i/(pts.length-1))*w;
+  const ys=(p)=>(p/max)*(h-6)+3; // rank 1 at top
+  const d=pts.map((p,i)=>(i?"L":"M")+xs(i).toFixed(1)+","+ys(p.position).toFixed(1)).join(" ");
+  const first=pts[0].position,last=pts[pts.length-1].position;const col=last<first?"#10b981":last>first?"#ef4444":"#94a3b8";
+  return "<svg width=\""+w+"\" height=\""+h+"\" viewBox=\"0 0 "+w+" "+h+"\"><path d=\""+d+"\" fill=\"none\" stroke=\""+col+"\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg>";
+}
+async function loadTracker(){
+  const body=document.getElementById("trkBody");const form=document.getElementById("trackerForm");
+  if(!seorLoggedIn()){form.style.opacity="0.4";form.style.pointerEvents="none";body.innerHTML="<div class=\"empty-state\"><div class=\"empty-icon\">🔒</div><div class=\"empty-title\">Log in to track rankings</div><div class=\"empty-sub\">Rank Tracker saves your keywords and charts their position over time. <a href=\"login.html\" style=\"color:var(--red);\">Log in</a> or <a href=\"signup.html\" style=\"color:var(--red);\">sign up free</a>.</div></div>";return;}
+  form.style.opacity="1";form.style.pointerEvents="auto";
+  body.innerHTML="<div class=\"loading-state show\"><div class=\"spinner\"></div><div class=\"loading-title\">Loading your tracked keywords...</div></div>";
+  try{
+    const uid=seorGetUser().id;
+    const [tkRes,hRes]=await Promise.all([
+      seorRest("tracked_keywords?select=*&user_id=eq."+uid+"&order=created_at.desc"),
+      seorRest("rank_history?select=tracked_keyword_id,position,checked_at&user_id=eq."+uid+"&order=checked_at.asc")
+    ]);
+    if(!tkRes.ok||!hRes.ok)throw new Error("load failed");
+    const tracked=await tkRes.json();const hist=await hRes.json();
+    const byTk={};for(const r of hist){(byTk[r.tracked_keyword_id]=byTk[r.tracked_keyword_id]||[]).push(r);}
+    renderTracker(tracked,byTk);
+  }catch(e){
+    if(e.message==="not-authenticated"){window.location.href="login.html";return;}
+    body.innerHTML="<div class=\"empty-state\"><div class=\"empty-sub\">Could not load tracked keywords.</div></div>";
+  }
+}
+function renderTracker(tracked,byTk){
+  const body=document.getElementById("trkBody");
+  if(!tracked.length){body.innerHTML="<div class=\"empty-state\"><div class=\"empty-icon\">📈</div><div class=\"empty-title\">No keywords tracked yet</div><div class=\"empty-sub\">Add a keyword and your domain above to start tracking its Google position.</div></div>";return;}
+  let h="";
+  for(const t of tracked){
+    const hist=byTk[t.id]||[];
+    const checked=t.last_checked_at?new Date(t.last_checked_at).toLocaleDateString('en-US',{month:'short',day:'numeric'}):"—";
+    h+="<div style=\"background:var(--card);border:1px solid var(--border);border-radius:16px;padding:18px 22px;margin-bottom:12px;\"><div style=\"display:flex;align-items:center;gap:16px;flex-wrap:wrap;\">"+
+       "<div style=\"flex:1;min-width:180px;\"><div style=\"font-size:16px;font-weight:700;\">"+esc(t.keyword)+"</div><div style=\"font-size:13px;color:var(--mid);margin-top:2px;\">"+esc(t.domain)+" · checked "+checked+"</div></div>"+
+       "<div style=\"text-align:center;\">"+sparkline(hist)+"</div>"+
+       "<div style=\"text-align:center;min-width:90px;\"><div style=\"font-size:24px;font-weight:900;color:"+posColor(t.last_position)+";\">"+posLabel(t.last_position)+"</div><div style=\"font-size:11px;color:var(--dim);\">"+hist.length+" check(s)</div></div>"+
+       "<div style=\"display:flex;gap:8px;\"><button onclick=\"refreshTracked('"+t.id+"',this)\" style=\"background:rgba(255,255,255,0.05);border:1px solid var(--border);color:var(--mid);border-radius:8px;padding:8px 12px;font-size:12px;cursor:pointer;font-family:inherit;\">↻ Refresh</button>"+
+       "<button onclick=\"removeTracked('"+t.id+"')\" style=\"background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);color:#f87171;border-radius:8px;padding:8px 12px;font-size:12px;cursor:pointer;font-family:inherit;\">Remove</button></div>"+
+       "</div></div>";
+  }
+  body.innerHTML=h;
+}
+async function checkRank(keyword,domain){
+  const res=await fetch("/api/keyword?keyword="+encodeURIComponent(keyword)+"&targetUrl="+encodeURIComponent(domain));
+  const data=await res.json();
+  if(!res.ok||data.error)throw new Error(data.error||"rank check failed");
+  return (data.targetRank!=null)?data.targetRank:null;
+}
+async function addTracked(){
+  if(!seorLoggedIn()){window.location.href="login.html";return;}
+  const keyword=document.getElementById("trkKeyword").value.trim();
+  let domain=document.getElementById("trkDomain").value.trim().replace(/^https?:\/\//,'').replace(/\/.*$/,'').replace(/^www\./,'');
+  const err=document.getElementById("trkErrBox");err.classList.remove("show");
+  if(!keyword||!domain){showErr("trkErrBox","Enter both a keyword and a domain.");return;}
+  const btn=document.getElementById("trkBtn");btn.disabled=true;btn.textContent="Checking...";
+  try{
+    const uid=seorGetUser().id;
+    const position=await checkRank(keyword,domain);
+    const ins=await seorRest("tracked_keywords",{method:"POST",headers:{"Prefer":"return=representation"},body:JSON.stringify({user_id:uid,keyword,domain,last_position:position,last_checked_at:new Date().toISOString()})});
+    if(ins.status===409){showErr("trkErrBox","You're already tracking that keyword + domain.");btn.disabled=false;btn.textContent="Track";return;}
+    if(!ins.ok)throw new Error("save failed");
+    const row=(await ins.json())[0];
+    await seorRest("rank_history",{method:"POST",headers:{"Prefer":"return=minimal"},body:JSON.stringify({tracked_keyword_id:row.id,user_id:uid,position})});
+    document.getElementById("trkKeyword").value="";document.getElementById("trkDomain").value="";
+    loadTracker();
+  }catch(e){showErr("trkErrBox",e.message==="not-authenticated"?"Session expired — please log in again.":"Failed: "+e.message);}
+  btn.disabled=false;btn.textContent="Track";
+}
+async function refreshTracked(id,el){
+  el.disabled=true;el.textContent="...";
+  try{
+    const uid=seorGetUser().id;
+    const r=await seorRest("tracked_keywords?select=keyword,domain&id=eq."+id);const t=(await r.json())[0];
+    const position=await checkRank(t.keyword,t.domain);
+    await seorRest("rank_history",{method:"POST",headers:{"Prefer":"return=minimal"},body:JSON.stringify({tracked_keyword_id:id,user_id:uid,position})});
+    await seorRest("tracked_keywords?id=eq."+id,{method:"PATCH",headers:{"Prefer":"return=minimal"},body:JSON.stringify({last_position:position,last_checked_at:new Date().toISOString()})});
+    loadTracker();
+  }catch(e){el.disabled=false;el.textContent="↻ Refresh";showErr("trkErrBox","Refresh failed.");}
+}
+async function removeTracked(id){
+  if(!confirm("Stop tracking this keyword and delete its history?"))return;
+  try{await seorRest("tracked_keywords?id=eq."+id,{method:"DELETE",headers:{"Prefer":"return=minimal"}});loadTracker();}
+  catch(e){showErr("trkErrBox","Could not remove.");}
+}
 function showErr(id,msg){const el=document.getElementById(id);if(el){el.textContent=msg;el.classList.add("show");}}
 function togCI(id){document.getElementById(id).classList.toggle("open");}
 function animNum(id,target,suffix){const el=document.getElementById(id);let cur=0;const step=Math.max(1,target/40);const iv=setInterval(()=>{cur=Math.min(cur+step,target);el.textContent=Math.round(cur)+suffix;if(cur>=target)clearInterval(iv);},28);}
