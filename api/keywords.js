@@ -1,6 +1,6 @@
 const https = require('https');
 const { URL } = require('url');
-const { rateLimit } = require('./_guard.js');
+const { rateLimit, cacheGet, cacheSet } = require('./_guard.js');
 
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -16,6 +16,10 @@ module.exports = async function handler(req, res) {
   if (!keyword) return res.status(400).json({ error: 'Keyword is required.' });
   if (!key) return res.status(500).json({ error: 'Search API not configured on server.' });
 
+  const ck = 'kws:' + keyword.toLowerCase();
+  const hit = await cacheGet(ck);
+  if (hit) return res.status(200).json(Object.assign(hit, { cached: true }));
+
   try {
     const [related, questions] = await Promise.all([
       fetchSERP(`${keyword}`, key),
@@ -27,7 +31,9 @@ module.exports = async function handler(req, res) {
     const relatedSearches = extractRelated(related);
     const metrics = estimateMetrics(related, keyword);
 
-    res.status(200).json({ keyword, suggestions, questions: questionList, relatedSearches, metrics });
+    const result = { keyword, suggestions, questions: questionList, relatedSearches, metrics };
+    await cacheSet(ck, result, 86400); // 24h
+    res.status(200).json(result);
   } catch(e) {
     res.status(500).json({ error: e.message });
   }

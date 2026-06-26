@@ -1,6 +1,6 @@
 const https = require('https');
 const { URL } = require('url');
-const { rateLimit } = require('./_guard.js');
+const { rateLimit, cacheGet, cacheSet } = require('./_guard.js');
 
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -23,18 +23,24 @@ module.exports = async function handler(req, res) {
       domain = new URL(url).hostname.replace(/^www\./, '');
     } catch(e) {}
 
+    const ck = 'bl:' + domain.toLowerCase();
+    const hit = await cacheGet(ck);
+    if (hit) return res.status(200).json(Object.assign(hit, { cached: true }));
+
     const data = await fetchPageRank(domain, key);
     const result = data.response && data.response[0];
 
     if (!result) return res.status(404).json({ error: 'No data found for this domain.' });
 
-    res.status(200).json({
+    const out = {
       domain,
       pageRank: result.page_rank_decimal || 0,
       pageRankInt: result.page_rank_integer || 0,
       rank: result.rank || 'N/A',
       status: result.status_code || 200,
-    });
+    };
+    await cacheSet(ck, out, 86400); // 24h
+    res.status(200).json(out);
   } catch(e) {
     res.status(500).json({ error: e.message });
   }

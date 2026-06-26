@@ -7,7 +7,7 @@
 const https = require('https');
 const http = require('http');
 const { URL } = require('url');
-const { rateLimit, validatePublicUrl } = require('./_guard.js');
+const { rateLimit, validatePublicUrl, cacheGet, cacheSet } = require('./_guard.js');
 
 async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -25,6 +25,10 @@ async function handler(req, res) {
     return res.status(e.code === 'SSRF' ? 403 : 400).json({ error: e.message });
   }
 
+  const ck = 'aeo:' + url.toLowerCase();
+  const hit = await cacheGet(ck);
+  if (hit) return res.status(200).json(Object.assign(hit, { cached: true }));
+
   try {
     const page = await fetchURL(url);
     if (!page.html || page.status >= 400) {
@@ -36,6 +40,7 @@ async function handler(req, res) {
     const report = analyze(page, robots, llms);
     report.url = page.finalUrl || url;
     report.meta = { analyzedAt: new Date().toISOString() };
+    await cacheSet(ck, report, 86400); // 24h
     res.status(200).json(report);
   } catch (e) {
     res.status(500).json({ error: e.message || 'Analysis failed.' });

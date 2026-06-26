@@ -98,3 +98,27 @@ async function rateLimit(req, endpoint, limit = 20, windowSec = 60) {
 }
 
 module.exports = { validatePublicUrl, rateLimit, isPrivateIP };
+
+// ── result cache (shared, via SECURITY DEFINER RPCs) ────────────────
+async function cacheGet(key) {
+  try {
+    const res = await fetch(SUPA_URL + '/rest/v1/rpc/cache_get', {
+      method: 'POST', headers: { 'Content-Type': 'application/json', apikey: SUPA_KEY, Authorization: 'Bearer ' + SUPA_KEY },
+      body: JSON.stringify({ p_key: key })
+    });
+    if (!res.ok) return null;
+    const v = await res.json();
+    return v || null;
+  } catch (_) { return null; }
+}
+async function cacheSet(key, payload, ttlSec) {
+  try {
+    await fetch(SUPA_URL + '/rest/v1/rpc/cache_set', {
+      method: 'POST', headers: { 'Content-Type': 'application/json', apikey: SUPA_KEY, Authorization: 'Bearer ' + SUPA_KEY },
+      body: JSON.stringify({ p_key: key, p_payload: payload, p_ttl: ttlSec })
+    });
+  } catch (_) { /* best-effort */ }
+}
+
+module.exports.cacheGet = cacheGet;
+module.exports.cacheSet = cacheSet;

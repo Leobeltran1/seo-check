@@ -1,7 +1,7 @@
 const https = require('https');
 const http = require('http');
 const { URL } = require('url');
-const { rateLimit, validatePublicUrl } = require('./_guard.js');
+const { rateLimit, validatePublicUrl, cacheGet, cacheSet } = require('./_guard.js');
 
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -15,6 +15,10 @@ module.exports = async function handler(req, res) {
   try { url = await validatePublicUrl(req.query.url); }
   catch (e) { return res.status(e.code === 'SSRF' ? 403 : 400).json({ error: e.message }); }
 
+  const ck = 'an:' + url.toLowerCase();
+  const hit = await cacheGet(ck);
+  if (hit) return res.status(200).json(Object.assign(hit, { cached: true }));
+
   try {
     const [htmlResult, psiDesktop, psiMobile] = await Promise.allSettled([
       fetchURL(url),
@@ -27,6 +31,7 @@ module.exports = async function handler(req, res) {
     const mob  = psiMobile.status === 'fulfilled' ? psiMobile.value : null;
 
     const report = buildReport(url, htmlData, desk, mob);
+    await cacheSet(ck, report, 43200); // 12h
     res.status(200).json(report);
   } catch (e) {
     res.status(500).json({ error: e.message });
