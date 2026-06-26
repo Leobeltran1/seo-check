@@ -15,7 +15,7 @@ const https = require('https');
 
 const SUPA_URL = 'https://jjfojqvhcecyxmstpmxl.supabase.co';
 
-module.exports = async function handler(req, res) {
+async function handler(req, res) {
   // Dry-run preview with sample data — lets you see the template with no setup.
   if (req.query.dry) {
     const html = renderDigest('there', sampleData());
@@ -171,3 +171,6 @@ function supa(method, path, key, body) {
     if (data) req.write(data); req.end();
   });
 }
+
+module.exports = handler;
+module.exports._test = { assemble, renderDigest };

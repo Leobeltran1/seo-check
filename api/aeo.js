@@ -9,7 +9,7 @@ const http = require('http');
 const { URL } = require('url');
 const { rateLimit, validatePublicUrl } = require('./_guard.js');
 
-module.exports = async function handler(req, res) {
+async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
   if (req.method === 'OPTIONS') return res.status(200).end();
@@ -286,3 +286,7 @@ function fetchText(urlStr) {
     req.end();
   });
 }
+
+// Export handler (default) plus pure internals for tests.
+module.exports = handler;
+module.exports._test = { analyze };
