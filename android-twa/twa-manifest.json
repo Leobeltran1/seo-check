@@ -4,7 +4,6 @@
   "name": "SEO Rocket",
   "launcherName": "SEO Rocket",
   "display": "standalone",
-  "orientation": "default",
   "themeColor": "#C0F040",
   "themeColorDark": "#0B0E1A",
   "navigationColor": "#0B0E1A",
@@ -24,17 +23,35 @@
   "appVersionName": "1.0.0",
   "appVersionCode": 1,
   "shortcuts": [
-    { "name": "SEO Analyzer", "shortName": "Analyzer", "url": "/app.html", "chosenIconUrl": "https://seo-check-flax.vercel.app/icons/icon-192.png" },
-    { "name": "Dashboard", "shortName": "Dashboard", "url": "/dashboard.html", "chosenIconUrl": "https://seo-check-flax.vercel.app/icons/icon-192.png" }
+    {
+      "name": "SEO Analyzer",
+      "shortName": "Analyzer",
+      "url": "/app.html",
+      "chosenIconUrl": "https://seo-check-flax.vercel.app/icons/icon-192.png"
+    },
+    {
+      "name": "Dashboard",
+      "shortName": "Dashboard",
+      "url": "/dashboard.html",
+      "chosenIconUrl": "https://seo-check-flax.vercel.app/icons/icon-192.png"
+    }
   ],
   "generatorApp": "bubblewrap-cli",
   "webManifestUrl": "https://seo-check-flax.vercel.app/manifest.json",
   "fallbackType": "customtabs",
   "features": {},
+  "alphaDependencies": {
+    "enabled": false
+  },
   "enableSiteSettingsShortcut": true,
   "isChromeOSOnly": false,
   "isMetaQuest": false,
   "fullScopeUrl": "https://seo-check-flax.vercel.app/",
   "minSdkVersion": 21,
-  "fingerprints": []
+  "orientation": "default",
+  "fingerprints": [],
+  "additionalTrustedOrigins": [],
+  "retainedBundles": [],
+  "displayOverride": [],
+  "appVersion": "1.0.0"
 }

@@ -5,10 +5,19 @@ This wraps the existing PWA (live at **https://seo-check-flax.vercel.app**) in a
 Android shell that opens the live site full-screen with no browser UI — so the
 app always reflects what's deployed; no separate mobile codebase.
 
-> Status: **scaffold only.** The project config and Digital Asset Links file are
-> in place. Producing and submitting the signed bundle still needs the
-> prerequisites below (a Google Play Developer account + generating a signing
-> key). Nothing here has been submitted.
+> Status: **build verified.** The full toolchain is installed (JDK 17, Android
+> SDK build-tools 34 / platform-34, Bubblewrap CLI — `bubblewrap doctor` passes),
+> and a test build succeeded: it produced a valid signed `app-release-bundle.aab`
+> (package `ai.seorocket.app`, label "SEO Rocket"). That test build used a
+> **throwaway dev key** (`android.keystore`, gitignored) — fine for proving the
+> pipeline, **not** for Play. The real submission needs a Google Play Developer
+> account + your own upload key (steps below). Nothing has been submitted.
+
+## Toolchain (already installed on this machine)
+- JDK 17: `/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk`
+- Android SDK: `/opt/homebrew/share/android-commandlinetools` (build-tools 34.0.0, platform android-34)
+- Bubblewrap config: `~/.bubblewrap/config.json` (points at both; `bubblewrap doctor` ✓)
+- The generated Gradle project + build outputs + keystore are **gitignored** (regenerated from `twa-manifest.json` on each build).
 
 ## What's already in the repo
 - `android-twa/twa-manifest.json` — Bubblewrap project config (name, colors,
@@ -25,17 +34,25 @@ app always reflects what's deployed; no separate mobile codebase.
 3. **Bubblewrap CLI** — `npm i -g @bubblewrap/cli`
    (On first `build`, Bubblewrap offers to install the Android SDK for you.)
 
-## Build steps
+## Build steps (run these in a real Terminal — Bubblewrap is interactive)
 From the `android-twa/` folder:
 
-1. **Initialize / build** (uses the existing twa-manifest.json):
+1. **Create your real upload key** (replaces the throwaway dev key). Choose a
+   password and keep it safe:
+   ```
+   rm -f android.keystore
+   /opt/homebrew/opt/openjdk@17/bin/keytool -genkeypair -keystore android.keystore \
+     -alias seorocket -keyalg RSA -keysize 2048 -validity 10000 \
+     -dname "CN=SEO Rocket, O=Titan Companies, C=US"
+   ```
+2. **Build the release bundle:**
    ```
    bubblewrap build
    ```
-   First run prompts to create a **signing key** — accept, and save the keystore
-   password somewhere safe (you cannot update the app later without it). This
-   produces `app-release-signed.aab` (for Play) and `app-release-signed.apk`
-   (for local testing).
+   Enter your keystore password when prompted. Produces
+   `app-release-bundle.aab` (upload this to Play) and `app-release-signed.apk`
+   (sideload to test on a phone). The toolchain is already installed, so this
+   just builds.
 
 2. **Get the signing key fingerprint:**
    ```
@@ -56,7 +73,7 @@ From the `android-twa/` folder:
    bubblewrap install
    ```
 
-5. **Submit:** in Play Console → create app → upload `app-release-signed.aab`,
+5. **Submit:** in Play Console → create app → upload `app-release-bundle.aab`,
    fill in store listing (icon, screenshots, description, privacy policy URL),
    and roll out to internal testing first.
 

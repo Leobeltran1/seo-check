@@ -8,3 +8,23 @@ seo-check-1/
 seo-check-2/
 seo-check-3/
 Downloads/
+
+# Bubblewrap / Android build — generated project, build outputs, signing key
+android-twa/android.keystore
+android-twa/app/
+android-twa/build/
+android-twa/.gradle/
+android-twa/gradle/
+android-twa/gradlew
+android-twa/gradlew.bat
+android-twa/build.gradle
+android-twa/settings.gradle
+android-twa/gradle.properties
+android-twa/store_icon.png
+android-twa/manifest-checksum.txt
+*.aab
+*.apk
+*.apk.idsig
+# local toolchain artifacts
+seo-rocket-cpanel.zip
+package-lock.json
