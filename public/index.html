@@ -115,6 +115,17 @@ footer p{font-size:16px;color:var(--dim);}
 .mobile-menu a:last-child{border-bottom:none;}
 .mobile-signup-btn{background:#C0F040 !important;color:#0B0E1A !important;font-weight:700 !important;border-radius:10px;padding:14px 20px !important;text-align:center;margin-top:8px;border-bottom:none !important;}
 
+/* NAV BREAKPOINT — the full desktop nav (logo + 3 links + 2 buttons) stops
+   fitting below ~1000px: the links wrap and collide with the logo. Switch to
+   the hamburger here, earlier than the main mobile breakpoint below. */
+@media(max-width:1000px){
+  nav{padding:0 24px;height:60px;}
+  .logo{font-size:20px;}
+  .nav-links{display:none !important;}
+  .nav-btns{display:none !important;}
+  .hamburger{display:flex !important;}
+}
+
 /* MOBILE BREAKPOINT */
 @media(max-width:768px){
   nav{padding:0 20px;height:60px;}
